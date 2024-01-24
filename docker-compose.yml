@@ -1,0 +1,63 @@
+version: "3"
+
+services:
+    hivegame:
+        build:
+            context: ./hive
+        ports:
+            - "8080:80"
+        depends_on:
+            - db
+        command: php -S 0.0.0.0:80
+
+    db:
+        build:
+            context: ./db
+        ports:
+            - "3307:3307"
+        environment:
+            - MYSQL_ROOT_PASSWORD=passw
+            - MYSQL_DATABASE=hive
+            - MYSQL_USER=hiveuser
+            - MYSQL_PASSWORD=hivepassword
+        volumes:
+            - hive-data:/var/lib/mysql
+
+
+    jenkins:
+        image: jenkins/jenkins:lts
+        ports:
+            - "8081:8080"
+            - "50000:50000"
+        volumes:
+            - jenkins-data:/var/jenkins_home
+        networks:
+            - test-network
+
+    sonarqube:
+        image: sonarqube:latest
+        ports:
+            - "9000:9000"
+        volumes:
+            - sonarqube-data:/opt/sonarqube/data
+        depends_on:
+            - sonar_db
+        networks:
+            - test-network
+
+    sonar_db:
+        image: postgres:12
+        environment:
+            POSTGRES_USER: sonar
+            POSTGRES_PASSWORD: sonar
+        volumes:
+            - sonar_db-data:/var/lib/postgresql/data
+
+volumes:
+    jenkins-data:
+    sonarqube-data:
+    sonar_db-data:
+    hive-data:
+
+networks:
+    test-network:
