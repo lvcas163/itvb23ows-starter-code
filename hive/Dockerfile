@@ -5,6 +5,6 @@ RUN docker-php-ext-install session && docker-php-ext-enable session
 
 WORKDIR /usr/src/hive
 
-COPY . /usr/src/hive
+COPY .src /usr/src/hive
 
 EXPOSE 80

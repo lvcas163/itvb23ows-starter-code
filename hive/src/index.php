@@ -1,7 +1,9 @@
 <?php
 session_start();
 
-include_once 'util.php';
+require_once __DIR__ . '/vendor/autoload.php';
+
+use Lucas\Hive\DatabaseConnection;
 
 if (!isset($_SESSION['board'])) {
     header('Location: restart.php');
@@ -188,7 +190,7 @@ if (!count($to)) {
         </strong>
         <ol>
             <?php
-            $db = include_once 'database.php';
+            $db = DatabaseConnection::getInstance();
             $stmt = $db->prepare('SELECT * FROM moves WHERE game_id = ' . $_SESSION['game_id']);
             $stmt->execute();
             $result = $stmt->get_result();

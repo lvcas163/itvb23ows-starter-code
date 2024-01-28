@@ -58,3 +58,16 @@ function slide($board, $from, $to)
         return false;
     return min(len($board[$common[0]]), len($board[$common[1]])) <= max(len($board[$from]), len($board[$to]));
 }
+
+function getState()
+{
+    return serialize([$_SESSION['hand'], $_SESSION['board'], $_SESSION['player']]);
+}
+
+function setState($state)
+{
+    list($a, $b, $c) = unserialize($state);
+    $_SESSION['hand'] = $a;
+    $_SESSION['board'] = $b;
+    $_SESSION['player'] = $c;
+}
