@@ -9,6 +9,8 @@ services:
         depends_on:
             - db
         command: php -S 0.0.0.0:80
+        networks:
+            - hive-network
 
     db:
         build:
@@ -16,12 +18,14 @@ services:
         ports:
             - "3307:3307"
         environment:
-            - MYSQL_ROOT_PASSWORD=passw
+            - MYSQL_ROOT_PASSWORD=password
             - MYSQL_DATABASE=hive
-            - MYSQL_USER=hiveuser
-            - MYSQL_PASSWORD=hivepassword
+            - MYSQL_USER=user
+            - MYSQL_PASSWORD=password
         volumes:
             - hive-data:/var/lib/mysql
+        networks:
+            - hive-network
 
 
     jenkins:
@@ -51,3 +55,4 @@ volumes:
 
 networks:
     test-network:
+    hive-network:
