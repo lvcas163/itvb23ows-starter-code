@@ -135,8 +135,10 @@ if (!count($to)) {
             Turn:
             <?php if ($player == 0) {
                 echo "White";
-            } else
-                echo "Black"; ?>
+            } else {
+                echo "Black";
+            }
+            ?>
         </div>
         <form method="post" action="play.php">
             <select name="piece">
@@ -186,7 +188,7 @@ if (!count($to)) {
         </strong>
         <ol>
             <?php
-            $db = include 'database.php';
+            $db = include_once 'database.php';
             $stmt = $db->prepare('SELECT * FROM moves WHERE game_id = ' . $_SESSION['game_id']);
             $stmt->execute();
             $result = $stmt->get_result();
