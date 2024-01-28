@@ -25,5 +25,3 @@ if ($mysqli->connect_error) {
 }
 
 return $mysqli;
-
-?>
