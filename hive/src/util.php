@@ -53,28 +53,40 @@ class Util
 
     public static function slide($board, $from, $to)
     {
-        if (!self::hasNeighBour($to, $board)) {
-            return false;
+        $isValidMove = true;
+
+        if (!self::hasNeighBour($to, $board) || !self::isNeighbour($from, $to)) {
+            $isValidMove = false;
         }
-        if (!self::isNeighbour($from, $to)) {
-            return false;
-        }
-        $b = explode(',', $to);
-        $common = [];
-        foreach (self::$OFFSETS as $pq) {
-            $p = $b[0] + $pq[0];
-            $q = $b[1] + $pq[1];
-            if (self::isNeighbour($from, $p . "," . $q)) {
-                $common[] = $p . "," . $q;
+
+        if ($isValidMove) {
+            $b = explode(',', $to);
+            $common = [];
+            foreach (self::$OFFSETS as $pq) {
+                $p = $b[0] + $pq[0];
+                $q = $b[1] + $pq[1];
+                if (self::isNeighbour($from, $p . "," . $q)) {
+                    $common[] = $p . "," . $q;
+                }
+            }
+
+            if (
+                count($common) < 2 ||
+                !$board[$common[0]] && !$board[$common[1]] &&
+                !$board[$from] && !$board[$to]
+            ) {
+                $isValidMove = false;
+            } else {
+                $isValidMove = min(
+                    self::len($board[$common[0]]),
+                    self::len($board[$common[1]])
+                ) <= max(self::len($board[$from]), self::len($board[$to]));
             }
         }
-        if (!$board[$common[0]] && !$board[$common[1]] && !$board[$from] && !$board[$to]) {
-            return false;
-        }
-        return min(
-            self::len($board[$common[0]]),
-            self::len($board[$common[1]])) <= max(self::len($board[$from]), self::len($board[$to]));
+
+        return $isValidMove;
     }
+
 
     public static function getState()
     {
