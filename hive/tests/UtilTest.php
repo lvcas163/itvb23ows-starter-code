@@ -30,8 +30,8 @@ class UtilTest extends TestCase
     public function testNeighboursAreSameColor()
     {
         $board = [
-            '0,0' => ['Q', '0'], 
-            '0,1' => ['Q', '0'], 
+            '0,0' => ['Q', '0'],
+            '0,1' => ['Q', '0'],
             '1,0' => ['Q', '0']
         ];
         $this->assertTrue(Util::neighboursAreSameColor(0, '0,1', $board));
@@ -53,9 +53,9 @@ class UtilTest extends TestCase
     public function testSlide()
     {
         $board = [
-            '0,0' => [['white']], 
-            '0,1' => [['black']], 
-            '1,0' => null, 
+            '0,0' => [['white']],
+            '0,1' => [['black']],
+            '1,0' => null,
             '1,1' => null
         ];
         $this->assertTrue(Util::slide($board, '0,0', '1,0'));
