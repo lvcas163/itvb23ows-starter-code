@@ -6,7 +6,9 @@ use mysqli;
 class DatabaseConnection {
     private static $instance = null;
 
-    private function __construct() {}
+    private function __construct() {
+        // Private because there is always just one database conn
+    }
 
     public static function getInstance() {
         if (self::$instance === null) {
