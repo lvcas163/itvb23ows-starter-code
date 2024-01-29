@@ -2,7 +2,10 @@
 
 session_start();
 
-include_once 'util.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Lucas\Hive\DatabaseConnection;
+use Lucas\Hive\Util;
 
 $from = $_POST['from'];
 $to = $_POST['to'];
@@ -64,9 +67,9 @@ if (!isset($board[$from])) {
             $board[$to] = [$tile];
         }
         $_SESSION['player'] = 1 - $_SESSION['player'];
-        $db = include 'database.php';
+        $db = DatabaseConnection::getInstance();
         $stmt = $db->prepare('insert into moves (game_id, type, move_from, move_to, previous_id, state) values (?, "move", ?, ?, ?, ?)');
-        $stmt->bind_param('issis', $_SESSION['game_id'], $from, $to, $_SESSION['last_move'], getState());
+        $stmt->bind_param('issis', $_SESSION['game_id'], $from, $to, $_SESSION['last_move'], Util::getState());
         $stmt->execute();
         $_SESSION['last_move'] = $db->insert_id;
     }

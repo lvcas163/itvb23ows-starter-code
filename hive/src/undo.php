@@ -2,10 +2,15 @@
 
 session_start();
 
-$db = include 'database.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Lucas\Hive\DatabaseConnection;
+use Lucas\Hive\Util;
+
+$db = DatabaseConnection::getInstance();
 $stmt = $db->prepare('SELECT * FROM moves WHERE id = ' . $_SESSION['last_move']);
 $stmt->execute();
 $result = $stmt->get_result()->fetch_array();
 $_SESSION['last_move'] = $result[5];
-setState($result[6]);
+Util::setState($result[6]);
 header('Location: index.php');
