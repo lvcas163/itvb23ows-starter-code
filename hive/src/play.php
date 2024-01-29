@@ -29,7 +29,8 @@ if (!$hand[$piece]) {
     $_SESSION['hand'][$player][$piece]--;
     $_SESSION['player'] = 1 - $_SESSION['player'];
     $db = DatabaseConnection::getInstance();
-    $stmt = $db->prepare('insert into moves (game_id, type, move_from, move_to, previous_id, state) values (?, "play", ?, ?, ?, ?)');
+    $stmt = $db->prepare('insert into moves (game_id, type, move_from, move_to, previous_id, state)
+     values (?, "play", ?, ?, ?, ?)');
     $stmt->bind_param('issis', $_SESSION['game_id'], $piece, $to, $_SESSION['last_move'], Util::getState());
     $stmt->execute();
     $_SESSION['last_move'] = $db->insert_id;

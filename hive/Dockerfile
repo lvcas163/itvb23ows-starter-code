@@ -1,4 +1,4 @@
-FROM composer:latest AS composer
+FROM composer:2.6.6 AS composer
 WORKDIR /app
 
 COPY composer.json composer.lock ./
