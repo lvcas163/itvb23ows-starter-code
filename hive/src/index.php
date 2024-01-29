@@ -4,6 +4,7 @@ session_start();
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Lucas\Hive\DatabaseConnection;
+use Lucas\Hive\Util;
 
 if (!isset($_SESSION['board'])) {
     header('Location: restart.php');
@@ -14,7 +15,7 @@ $player = $_SESSION['player'];
 $hand = $_SESSION['hand'];
 
 $to = [];
-foreach ($GLOBALS['OFFSETS'] as $pq) {
+foreach (Util::$OFFSETS as $pq) {
     foreach (array_keys($board) as $pos) {
         $pq2 = explode(',', $pos);
         $to[] = ($pq[0] + $pq2[0]) . ',' . ($pq[1] + $pq2[1]);

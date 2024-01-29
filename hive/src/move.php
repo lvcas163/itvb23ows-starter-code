@@ -23,14 +23,14 @@ if (!isset($board[$from])) {
     $_SESSION['error'] = "Queen bee is not played";
 } else {
     $tile = array_pop($board[$from]);
-    if (!hasNeighBour($to, $board)) {
+    if (!Util::hasNeighBour($to, $board)) {
         $_SESSION['error'] = "Move would split hive";
     } else {
         $all = array_keys($board);
         $queue = [array_shift($all)];
         while ($queue) {
             $next = explode(',', array_shift($queue));
-            foreach ($GLOBALS['OFFSETS'] as $pq) {
+            foreach (Util::$OFFSETS as $pq) {
                 list($p, $q) = $pq;
                 $p += $next[0];
                 $q += $next[1];
@@ -48,7 +48,7 @@ if (!isset($board[$from])) {
             } elseif (isset($board[$to]) && $tile[1] != "B") {
                 $_SESSION['error'] = 'Tile not empty';
             } elseif ($tile[1] == "Q" || $tile[1] == "B") {
-                if (!slide($board, $from, $to)) {
+                if (!Util::slide($board, $from, $to)) {
                     $_SESSION['error'] = 'Tile must slide';
                 }
             }
