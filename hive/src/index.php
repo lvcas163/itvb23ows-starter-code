@@ -3,15 +3,15 @@ session_start();
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Lucas\Hive\DatabaseConnection;
-use Lucas\Hive\Util;
+use Lucas\Hive\Database;
+use Lucas\Hive\Board;
 
 if (!isset($_SESSION['board'])) {
     header('Location: restart.php');
     exit;
 }
 
-$board = $_SESSION['board'];
+$board = new Board($_SESSION['board']);
 $player = $_SESSION['player'];
 $hand = $_SESSION['hand'];
 
@@ -21,7 +21,7 @@ $to = calculatePositions($board);
 function calculatePositions(array $board): array
 {
     $to = [];
-    foreach (Util::$OFFSETS as $offset) {
+    foreach (Board::$OFFSETS as $offset) {
         foreach (array_keys($board) as $pos) {
             list($p, $q) = explode(',', $pos);
             $newPos = ($offset[0] + $p) . ',' . ($offset[1] + $q);
@@ -197,10 +197,7 @@ function calculatePositions(array $board): array
     </strong>
     <ol>
         <?php
-        $db = DatabaseConnection::getInstance();
-        $stmt = $db->prepare('SELECT * FROM moves WHERE game_id = ' . $_SESSION['game_id']);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $result = $board->getMoves($_SESSION['game_id']);
         while ($row = $result->fetch_array()) {
             echo '<li>' . $row[2] . ' ' . $row[3] . ' ' . $row[4] . '</li>';
         }

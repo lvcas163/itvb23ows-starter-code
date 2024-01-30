@@ -4,7 +4,7 @@ session_start();
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Lucas\Hive\DatabaseConnection;
+use Lucas\Hive\Database;
 
 
 $_SESSION['board'] = [];
@@ -15,8 +15,6 @@ $_SESSION['hand'] = [
 ];
 $_SESSION['player'] = 0;
 
-$db = DatabaseConnection::getInstance();
-$db->prepare('INSERT INTO games VALUES ()')->execute();
-$_SESSION['game_id'] = $db->insert_id;
+$_SESSION['game_id'] = Database::newGame();
 
 header('Location: index.php');
