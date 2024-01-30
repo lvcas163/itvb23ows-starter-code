@@ -15,7 +15,7 @@ class Database
     public static function getInstance()
     {
         if (self::$db === null) {
-            $db_host = getenv('DB_HOST') ?: 'db';
+            $db_host = getenv('DB_HOST') ?: '0.0.0.0';
             $db_user = getenv('DB_USER') ?: 'user';
             $db_password = getenv('DB_PASSWORD') ?: 'password';
             $db_name = getenv('DB_NAME') ?: 'hive';
@@ -61,7 +61,7 @@ class Database
         return $db->insert_id;
     }
 
-    public static function getMoves($gameId)
+    public static function getMoves(string $gameId)
     {
         $db = Database::getInstance();
         $stmt = $db->prepare('SELECT * FROM moves WHERE game_id = ' . $gameId);

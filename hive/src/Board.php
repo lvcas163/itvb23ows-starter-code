@@ -6,7 +6,7 @@ class Board
 {
     public static $OFFSETS = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, 1], [1, -1]];
 
-    private array $board = [];
+    private array $board;
 
     public function __construct(array $board = [])
     {
@@ -23,28 +23,29 @@ class Board
         return array_keys($this->board);
     }
 
-    public function emptyTile(int $position): bool
+    public function emptyTile(string $position): bool
     {
         return !isset($this->board[$position]);
     }
 
-    public function setTile(int $position, string $piece, int $player)
+    public function setTile(string $position, string $piece, int $player)
     {
         $this->board[$position] = array(array($player, $piece));
     }
 
-    public function pushTile(int $position, string $piece, int $player)
+    public function pushTile(string $position, string $piece, int $player)
     {
         array_push($this->board[$position], array($player, $piece));
     }
 
-    public function popTile(int $position): array
+    public function popTile(string $position): array
     {
         return array_pop($this->board[$position]);
     }
 
-    public function getNonEmptyTiles() {
-        return array_filter($this->board, function($tileStack) {
+    public function getNonEmptyTiles()
+    {
+        return array_filter($this->board, function ($tileStack) {
             return !empty($tileStack);
         });
     }
@@ -138,14 +139,23 @@ class Board
     public function calculatePositions(): array
     {
         $to = [];
-        foreach (Board::$OFFSETS as $offset) {
+        $offsets = Board::$OFFSETS;
+        foreach ($offsets as $pq) {
             foreach (array_keys($this->board) as $pos) {
-                list($p, $q) = explode(',', $pos);
-                $newPos = ($offset[0] + $p) . ',' . ($offset[1] + $q);
-                $to[] = $newPos;
+                $pq2 = explode(',', $pos);
+                $to[] = ($pq[0] + $pq2[0]) . ',' . ($pq[1] + $pq2[1]);
             }
         }
+        $to = array_unique($to);
+        if (!count($to)) {
+            $to[] = '0,0';
+        }
 
-        return array_unique($to) ?: ['0,0'];
+        return $to;
+    }
+
+    public function getBoard()
+    {
+        return $this->board;
     }
 }

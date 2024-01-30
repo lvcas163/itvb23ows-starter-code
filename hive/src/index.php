@@ -3,17 +3,16 @@ session_start();
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Lucas\Hive\Database;
-use Lucas\Hive\Board;
+use Lucas\Hive\Hive;
 
 if (!isset($_SESSION['board'])) {
     header('Location: restart.php');
     exit;
 }
 
-$board = new Board($_SESSION['board']);
-$player = $_SESSION['player'];
-$hand = $_SESSION['hand'];
+$hive = Hive::fromSession($_SESSION);
+$board = $hive->getBoard();
+$hands = $hive->getHands();
 
 $to = $board->calculatePositions();
 
@@ -76,7 +75,7 @@ $to = $board->calculatePositions();
         <?php
         $min_p = 1000;
         $min_q = 1000;
-        foreach ($board as $pos => $tile) {
+        foreach ($board->getBoard() as $pos => $tile) {
             $pq = explode(',', $pos);
             if ($pq[0] < $min_p) {
                 $min_p = $pq[0];
@@ -108,7 +107,7 @@ $to = $board->calculatePositions();
     <div class="hand">
         White:
         <?php
-        foreach ($hand[0] as $tile => $ct) {
+        foreach ($hands[0] as $tile => $ct) {
             for ($i = 0; $i < $ct; $i++) {
                 echo '<div class="tile player0"><span>' . $tile . "</span></div> ";
             }
@@ -137,7 +136,7 @@ $to = $board->calculatePositions();
     <form method="post" action="play.php">
         <select name="piece">
             <?php
-            foreach ($hand[$player] as $tile => $ct) {
+            foreach ($hive->getPlayerHand()->getHand() as $tile => $ct) {
                 echo "<option value=\"$tile\">$tile</option>";
             }
             ?>
@@ -182,8 +181,8 @@ $to = $board->calculatePositions();
     </strong>
     <ol>
         <?php
-        $result = Database::getMoves($_SESSION['game_id']);
-        while ($row = $result->fetch_array()) {
+        $result = $hive->getMoves();
+        while ($row = $result) {
             echo '<li>' . $row[2] . ' ' . $row[3] . ' ' . $row[4] . '</li>';
         }
         ?>
