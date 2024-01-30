@@ -15,22 +15,7 @@ $board = new Board($_SESSION['board']);
 $player = $_SESSION['player'];
 $hand = $_SESSION['hand'];
 
-$to = calculatePositions($board);
-
-
-function calculatePositions(array $board): array
-{
-    $to = [];
-    foreach (Board::$OFFSETS as $offset) {
-        foreach (array_keys($board) as $pos) {
-            list($p, $q) = explode(',', $pos);
-            $newPos = ($offset[0] + $p) . ',' . ($offset[1] + $q);
-            $to[] = $newPos;
-        }
-    }
-
-    return array_unique($to) ?: ['0,0'];
-}
+$to = $board->calculatePositions();
 
 ?>
 <!DOCTYPE html>
@@ -100,7 +85,7 @@ function calculatePositions(array $board): array
                 $min_q = $pq[1];
             }
         }
-        foreach (array_filter($board) as $pos => $tile) {
+        foreach ($board->getNonEmptyTiles() as $pos => $tile) {
             $pq = explode(',', $pos);
             $pq[0];
             $pq[1];
@@ -169,7 +154,7 @@ function calculatePositions(array $board): array
     <form method="post" action="move.php">
         <select name="from">
             <?php
-            foreach (array_keys($board) as $pos) {
+            foreach ($board->allTiles() as $pos) {
                 echo "<option value=\"$pos\">$pos</option>";
             }
             ?>
@@ -197,7 +182,7 @@ function calculatePositions(array $board): array
     </strong>
     <ol>
         <?php
-        $result = $board->getMoves($_SESSION['game_id']);
+        $result = Database::getMoves($_SESSION['game_id']);
         while ($row = $result->fetch_array()) {
             echo '<li>' . $row[2] . ' ' . $row[3] . ' ' . $row[4] . '</li>';
         }

@@ -8,10 +8,7 @@ use Lucas\Hive\Database;
 use Lucas\Hive\Util;
 
 function undo() {
-    $db = Database::getInstance();
-    $stmt = $db->prepare('SELECT * FROM moves WHERE id = ' . $_SESSION['last_move']);
-    $stmt->execute();
-    $result = $stmt->get_result()->fetch_array();
+    $result = Database::getMove($_SESSION['last_move'])->fetch_array();
     $_SESSION['last_move'] = $result[5];
     Util::setState($result[6]);
     header('Location: index.php');

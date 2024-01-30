@@ -13,6 +13,42 @@ class Board
         $this->board = $board;
     }
 
+    public function getLastTile($position)
+    {
+        return end($this->board[$position]);
+    }
+
+    public function allTiles()
+    {
+        return array_keys($this->board);
+    }
+
+    public function emptyTile(int $position): bool
+    {
+        return !isset($this->board[$position]);
+    }
+
+    public function setTile(int $position, string $piece, int $player)
+    {
+        $this->board[$position] = array(array($player, $piece));
+    }
+
+    public function pushTile(int $position, string $piece, int $player)
+    {
+        array_push($this->board[$position], array($player, $piece));
+    }
+
+    public function popTile(int $position): array
+    {
+        return array_pop($this->board[$position]);
+    }
+
+    public function getNonEmptyTiles() {
+        return array_filter($this->board, function($tileStack) {
+            return !empty($tileStack);
+        });
+    }
+
     public static function isNeighbour($a, $b)
     {
         $a = explode(',', $a);
@@ -58,6 +94,11 @@ class Board
         return $tile ? count($tile) : 0;
     }
 
+    public function boardCount()
+    {
+        return count($this->board);
+    }
+
     public function slide($from, $to)
     {
         $isValidMove = true;
@@ -92,5 +133,19 @@ class Board
         }
 
         return $isValidMove;
+    }
+
+    public function calculatePositions(): array
+    {
+        $to = [];
+        foreach (Board::$OFFSETS as $offset) {
+            foreach (array_keys($this->board) as $pos) {
+                list($p, $q) = explode(',', $pos);
+                $newPos = ($offset[0] + $p) . ',' . ($offset[1] + $q);
+                $to[] = $newPos;
+            }
+        }
+
+        return array_unique($to) ?: ['0,0'];
     }
 }

@@ -16,18 +16,18 @@ $board = new Board($_SESSION['board']);
 $hand = $_SESSION['hand'][$player];
 unset($_SESSION['error']);
 
-if (!isset($board[$from])) {
+if ($board->emptyTile($from)) {
     $_SESSION['error'] = 'Board position is empty';
-} elseif ($board[$from][count($board[$from]) - 1][0] != $player) {
+} elseif ($board->getLastTile($from)[0] != $player) {
     $_SESSION['error'] = "Tile is not owned by player";
 } elseif ($hand['Q']) {
     $_SESSION['error'] = "Queen bee is not played";
 } else {
-    $tile = array_pop($board[$from]);
+    $tile = $board->popTile($from);
     if (!$board->hasNeighBour($to)) {
         $_SESSION['error'] = "Move would split hive";
     } else {
-        $all = array_keys($board);
+        $all = $board->allTiles();
         $queue = [array_shift($all)];
         while ($queue) {
             $next = explode(',', array_shift($queue));
@@ -46,7 +46,7 @@ if (!isset($board[$from])) {
         } else {
             if ($from == $to) {
                 $_SESSION['error'] = 'Tile must move';
-            } elseif (isset($board[$to]) && $tile[1] != "B") {
+            } elseif (!$board->emptyTile($to) && $tile[1] != "B") {
                 $_SESSION['error'] = 'Tile not empty';
             } elseif ($tile[1] == "Q" || $tile[1] == "B") {
                 if (!$board->slide($from, $to)) {
@@ -56,16 +56,16 @@ if (!isset($board[$from])) {
         }
     }
     if (isset($_SESSION['error'])) {
-        if (isset($board[$from])) {
-            array_push($board[$from], $tile);
+        if(!$board->emptyTile($from)) {
+            $board->pushTile($from, $tile[0], $tile[1]);
         } else {
-            $board[$from] = [$tile];
+            $board->setTile($from, $tile[0], $tile[1]);
         }
     } else {
-        if (isset($board[$to])) {
-            array_push($board[$to], $tile);
+        if(!$board->emptyTile($to)) {
+            $board->pushTile($to, $tile[0], $tile[1]);
         } else {
-            $board[$to] = [$tile];
+            $board->setTile($to, $tile[0], $tile[1]);
         }
         $_SESSION['player'] = 1 - $_SESSION['player'];
         $insertId = Database::addNormalMove($_SESSION['game_id'], $from, $to, $_SESSION['last_move'], Util::getState());
