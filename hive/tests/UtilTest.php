@@ -12,6 +12,7 @@ class UtilTest extends TestCase
     {
         // Arrange
         $state = serialize(['a', 'b', 'c']);
+        $_SESSION = [];
         // Act
         Util::setState($state);
         // Assert

@@ -1,4 +1,5 @@
 <?php
+
 namespace Lucas\Hive;
 
 use mysqli;
@@ -69,14 +70,16 @@ class Database
         return $moves;
     }
 
-    public static function getMove(string $moveId) {
+    public static function getMove(string $moveId)
+    {
         $db = Database::getInstance();
         $stmt = $db->prepare('SELECT * FROM moves WHERE id = ' . $moveId);
         $stmt->execute();
         return $stmt->get_result();
     }
 
-    public static function newGame() {
+    public static function newGame()
+    {
         $db = Database::getInstance();
         $db->prepare('INSERT INTO games VALUES ()')->execute();
         return $db->insert_id;
