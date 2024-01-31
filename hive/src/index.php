@@ -14,7 +14,7 @@ $hive = Hive::fromSession($_SESSION);
 $board = $hive->getBoard();
 $hands = $hive->getHands();
 
-$to = $board->calculatePositions();
+$to = $hive->getValidPositions();
 
 ?>
 <!DOCTYPE html>
