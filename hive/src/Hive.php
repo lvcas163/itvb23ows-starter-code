@@ -226,15 +226,16 @@ class Hive
         $to = [];
         $offsets = Board::$OFFSETS;
         foreach ($offsets as $pq) {
-            try {
-                $this->checkPlayRules(implode(',', $pq));
-            } catch (HiveException) {
-                continue;
-            }
             $positions = array_keys($this->board->getBoard());
             foreach ($positions as $pos) {
                 $pq2 = explode(',', $pos);
-                $to[] = ($pq[0] + $pq2[0]) . ',' . ($pq[1] + $pq2[1]);
+                $result = ($pq[0] + $pq2[0]) . ',' . ($pq[1] + $pq2[1]);
+                try {
+                    $this->checkPlayRules($result);
+                } catch (HiveException) {
+                    continue;
+                }
+                $to[] = $result;
             }
         }
         $to = array_unique($to);
