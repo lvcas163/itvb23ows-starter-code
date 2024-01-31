@@ -27,18 +27,16 @@ class Hive
     public static function fromSession(array $session)
     {
         $hands = null;
-        if (isset($session['hands'])) {
+        if (isset($session['hand'])) {
             $hands = array_map(function (array $hand) {
                 return new Hand($hand);
-            }, $session['hands']);
+            }, $session['hand']);
         }
 
         $last_move = null;
         if (isset($session['last_move'])) {
             $last_move = $session['last_move'];
         }
-
-
 
         return new Hive(
             new Board($session['board']),
@@ -86,6 +84,7 @@ class Hive
 
     public function move(string $from, string $to)
     {
+        $tile = null;
         try {
             if ($this->board->emptyTile($from)) {
                 throw new HiveException('Board position is empty');
@@ -128,19 +127,21 @@ class Hive
                 }
             }
         } catch (HiveException $e) {
-            if (!$this->board->emptyTile($from)) {
-                $this->board->pushTile($from, $tile[0], $tile[1]);
-            } else {
-                $this->board->setTile($from, $tile[0], $tile[1]);
+            if ($tile) {
+                if (!$this->board->emptyTile($from)) {
+                    $this->board->pushTile($from, $tile[1], $tile[0]);
+                } else {
+                    $this->board->setTile($from, $tile[1], $tile[0]);
+                }
             }
 
             throw $e;
         }
 
         if (!$this->board->emptyTile($to)) {
-            $this->board->pushTile($to, $tile[0], $tile[1]);
+            $this->board->pushTile($to, $tile[1], $tile[0]);
         } else {
-            $this->board->setTile($to, $tile[0], $tile[1]);
+            $this->board->setTile($to, $tile[1], $tile[0]);
         }
 
         return Database::addNormalMove($this->gameId, $from, $to, $this->lastMove, $this->getState());

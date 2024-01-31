@@ -100,40 +100,35 @@ class Board
         return count($this->board);
     }
 
-    public function slide($from, $to)
+    public function slide(string $from, string $to): bool
     {
-        $isValidMove = true;
-
-        if (!self::hasNeighBour($to) || !self::isNeighbour($from, $to)) {
-            $isValidMove = false;
+        if (!$this->hasNeighbour($to) || !$this->isNeighbour($from, $to)) {
+            return false;
         }
-
-        if ($isValidMove) {
-            $b = explode(',', $to);
-            $common = [];
-            foreach (self::$OFFSETS as $pq) {
-                $p = $b[0] + $pq[0];
-                $q = $b[1] + $pq[1];
-                if (self::isNeighbour($from, $p . "," . $q)) {
-                    $common[] = $p . "," . $q;
-                }
-            }
-
-            if (
-                count($common) < 2 ||
-                !$this->board[$common[0]] && !$this->board[$common[1]] &&
-                !$this->board[$from] && !$this->board[$to]
-            ) {
-                $isValidMove = false;
-            } else {
-                $isValidMove = min(
-                    self::len($this->board[$common[0]]),
-                    self::len($this->board[$common[1]])
-                ) <= max(self::len($this->board[$from]), self::len($this->board[$to]));
+        $b = explode(',', $to);
+        $common = [];
+        foreach (self::$OFFSETS as $pq) {
+            $p = $b[0] + $pq[0];
+            $q = $b[1] + $pq[1];
+            if ($this->isNeighbour($from, $p . "," . $q)) {
+                $common[] = $p . "," . $q;
             }
         }
-
-        return $isValidMove;
+        if (
+            !isset($this->board[$common[0]]) &&
+            !isset($this->board[$common[1]]) &&
+            !isset($this->board[$from]) &&
+            !isset($this->board[$to])
+        ) {
+            return false;
+        }
+        return min(
+                $this->len($this->board[$common[0]] ?? []),
+                $this->len($this->board[$common[1]] ?? [])
+            ) <= max(
+                $this->len($this->board[$from] ?? []),
+                $this->len($this->board[$to] ?? [])
+            );
     }
 
     public function calculatePositions(): array
