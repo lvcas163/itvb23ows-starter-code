@@ -43,7 +43,7 @@ class Board
 
     public function pushTile(string $position, string $piece, int $player)
     {
-        array_push($this->board[$position], array($player, $piece));
+        $this->board[$position][] = array($player, $piece);
     }
 
     public function popTile(string $position): array
