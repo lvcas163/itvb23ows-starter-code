@@ -5,12 +5,16 @@ services:
         build:
             context: ./hive
         ports:
-            - "8080:8080"
+            - "8000:8080"
         depends_on:
             - db
         command: php -S 0.0.0.0:8080 -t src/
         networks:
             - hive-network
+        environment:
+            - DB_HOST=db
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
 
     db:
         build:
@@ -41,7 +45,7 @@ services:
     sonarqube:
         image: sonarqube:latest
         ports:
-            - "9000:9000"
+            - "9001:9000"
         volumes:
             - sonarqube-data:/opt/sonarqube/data
         networks:
