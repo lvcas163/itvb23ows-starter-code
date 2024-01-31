@@ -64,9 +64,15 @@ class Database
     public static function getMoves(string $gameId)
     {
         $db = Database::getInstance();
-        $stmt = $db->prepare('SELECT * FROM moves WHERE game_id = ' . $gameId);
+        $stmt = $db->prepare('SELECT * FROM moves WHERE game_id = ?');
+        $stmt->bind_param('s', $gameId);
         $stmt->execute();
-        return $stmt->get_result();
+        $result = $stmt->get_result();
+        $moves = array();
+        while ($row = $result->fetch_assoc()) {
+            $moves[] = $row;
+        }
+        return $moves;
     }
 
     public static function getMove(string $moveId) {

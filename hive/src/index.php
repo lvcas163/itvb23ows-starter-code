@@ -107,7 +107,7 @@ $to = $board->calculatePositions();
     <div class="hand">
         White:
         <?php
-        foreach ($hands[0] as $tile => $ct) {
+        foreach ($hands[0]->getHand() as $tile => $ct) {
             for ($i = 0; $i < $ct; $i++) {
                 echo '<div class="tile player0"><span>' . $tile . "</span></div> ";
             }
@@ -117,7 +117,7 @@ $to = $board->calculatePositions();
     <div class="hand">
         Black:
         <?php
-        foreach ($hand[1] as $tile => $ct) {
+        foreach ($hands[1]->getHand() as $tile => $ct) {
             for ($i = 0; $i < $ct; $i++) {
                 echo '<div class="tile player1"><span>' . $tile . "</span></div> ";
             }
@@ -126,7 +126,7 @@ $to = $board->calculatePositions();
     </div>
     <div class="turn">
         Turn:
-        <?php if ($player == 0) {
+        <?php if ($hive->getPlayer() == 0) {
             echo "White";
         } else {
             echo "Black";
@@ -182,8 +182,8 @@ $to = $board->calculatePositions();
     <ol>
         <?php
         $result = $hive->getMoves();
-        while ($row = $result) {
-            echo '<li>' . $row[2] . ' ' . $row[3] . ' ' . $row[4] . '</li>';
+        foreach ($result as $row) {
+            echo '<li>' . $row['type'] . ' ' . $row['move_from'] ?: 'NULL' . ' ' . $row['move_to'] ?: 'NULL' . '</li>';
         }
         ?>
     </ol>

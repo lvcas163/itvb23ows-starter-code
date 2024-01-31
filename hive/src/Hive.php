@@ -33,12 +33,19 @@ class Hive
             }, $session['hands']);
         }
 
+        $last_move = null;
+        if (isset($session['last_move'])) {
+            $last_move = $session['last_move'];
+        }
+
+
+
         return new Hive(
             new Board($session['board']),
             $session['game_id'],
             $session['player'],
             $hands,
-            $session['last_move']
+            $last_move
         );
     }
 
@@ -49,8 +56,7 @@ class Hive
 
     public function getMoves()
     {
-        $result = Database::getMoves($this->gameId);
-        return $result->fetch_array();
+        return Database::getMoves($this->gameId);
     }
 
     public function getHands()
