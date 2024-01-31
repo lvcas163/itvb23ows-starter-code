@@ -195,23 +195,53 @@ class Hive
     public function play(string $to, string $piece)
     {
         $hand = $this->getPlayerHand();
-        $board = $this->getBoard();
 
         if (!$hand->hasPiece($piece)) {
             throw new HiveException("Player does not have tile");
-        } elseif (!$board->emptyTile($to)) {
-            throw new HiveException('Board position is not empty');
-        } elseif ($board->boardCount() && !$board->hasNeighBour($to)) {
-            throw new HiveException("board position has no neighbour");
-        } elseif ($hand->sum() < 11 && !$board->neighboursAreSameColor($this->getPlayer(), $to)) {
-            throw new HiveException("Board position has opposing neighbour");
-        } elseif ($hand->sum() <= 8 && $hand['Q']) {
+        }
+        if ($hand->sum() <= 8 && $hand['Q']) {
             throw new HiveException('Must play queen bee');
         }
+        $this->checkPlayRules($to);
 
         $this->getBoard()->setTile($to, $piece, $this->getPlayer());
         $this->getPlayerHand()->removePiece($piece);
 
         return Database::addPlayMove($this->gameId, $piece, $to, $this->lastMove, $this->getState());
+    }
+
+    public function checkPlayRules($to): void
+    {
+        if (!$this->board->emptyTile($to)) {
+            throw new HiveException('Board position is not empty');
+        } elseif ($this->board->boardCount() && !$this->board->hasNeighBour($to)) {
+            throw new HiveException("board position has no neighbour");
+        } elseif ($this->getPlayerHand()->sum() < 11 && !$this->board->neighboursAreSameColor($this->getPlayer(), $to)) {
+            throw new HiveException("Board position has opposing neighbour");
+        }
+    }
+
+    public function getValidPositions(): array
+    {
+        $to = [];
+        $offsets = Board::$OFFSETS;
+        foreach ($offsets as $pq) {
+            try {
+                $this->checkPlayRules(implode(',', $pq));
+            } catch (HiveException) {
+                continue;
+            }
+            $positions = array_keys($this->board->getBoard());
+            foreach ($positions as $pos) {
+                $pq2 = explode(',', $pos);
+                $to[] = ($pq[0] + $pq2[0]) . ',' . ($pq[1] + $pq2[1]);
+            }
+        }
+        $to = array_unique($to);
+        if (!count($to)) {
+            $to[] = '0,0';
+        }
+
+        return $to;
     }
 }
