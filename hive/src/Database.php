@@ -34,7 +34,7 @@ class Database
         $db = Database::getInstance();
         $stmt = $db->prepare('insert into moves (game_id, type, move_from, move_to, previous_id, state)
          values (?, ?, ?, ?, ?, ?)');
-        $stmt->bind_param('isssis', $move, $gameId, $from, $to, $lastMove, $state);
+        $stmt->bind_param('isssis', $gameId, $move, $from, $to, $lastMove, $state);
         $stmt->execute();
 
         return $db->insert_id;
