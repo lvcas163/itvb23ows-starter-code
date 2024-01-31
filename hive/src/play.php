@@ -13,8 +13,6 @@ $to = $_POST['to'];
 $hive = Hive::fromSession($_SESSION);
 
 try {
-    $hive = Hive::fromSession($_SESSION);
-
     $moveId = $hive->play($to, $piece);
     $_SESSION['board'] = $hive->getBoard()->getBoard();
     $_SESSION['player'] = $hive->getOtherPlayer();

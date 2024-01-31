@@ -29,12 +29,12 @@ class Database
         return self::$db;
     }
 
-    private static function addMove($gameId, $from, $to, $lastMove, $state, $move, $bindVars)
+    private static function addMove($gameId, $from, $to, $lastMove, $state, $move)
     {
         $db = Database::getInstance();
         $stmt = $db->prepare('insert into moves (game_id, type, move_from, move_to, previous_id, state)
          values (?, ?, ?, ?, ?, ?)');
-        $stmt->bind_param($bindVars, $move, $gameId, $from, $to, $lastMove, $state);
+        $stmt->bind_param('isssis', $move, $gameId, $from, $to, $lastMove, $state);
         $stmt->execute();
 
         return $db->insert_id;
@@ -42,23 +42,17 @@ class Database
 
     public static function addNormalMove($gameId, $from, $to, $lastMove, $state)
     {
-        return Database::addMove($gameId, $from, $to, $lastMove, $state, 'move', 'issis');
+        return Database::addMove($gameId, $from, $to, $lastMove, $state, 'move');
     }
 
     public static function addPlayMove($gameId, $from, $to, $lastMove, $state)
     {
-        return Database::addMove($gameId, $from, $to, $lastMove, $state, 'play', 'issis');
+        return Database::addMove($gameId, $from, $to, $lastMove, $state, 'play');
     }
 
     public static function addPassMove($gameId, $lastMove, $state)
     {
-        $db = Database::getInstance();
-        $stmt = $db->prepare('insert into moves (game_id, type, move_from, move_to, previous_id, state)
-        values (?, "pass", null, null, ?, ?)');
-        $stmt->bind_param('iis', $gameId, $lastMove, $state);
-        $stmt->execute();
-
-        return $db->insert_id;
+        return Database::addMove($gameId, null, null, $lastMove, $state, "pass");
     }
 
     public static function getMoves(string $gameId)

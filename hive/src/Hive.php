@@ -69,11 +69,6 @@ class Hive
         return $this->hands[$this->player];
     }
 
-    public function getOpponentHand()
-    {
-        return $this->hands[$this->getOtherPlayer()];
-    }
-
     public function getGameId()
     {
         return $this->gameId;
@@ -148,7 +143,7 @@ class Hive
             $this->board->setTile($to, $tile[0], $tile[1]);
         }
 
-        return Database::addNormalMove($this->gameId, $from, $to, $this->lastMove, Util::getState());
+        return Database::addNormalMove($this->gameId, $from, $to, $this->lastMove, $this->getState());
     }
 
     public function undo()
@@ -164,7 +159,16 @@ class Hive
 
     public function pass()
     {
-        return Database::addPassMove($this->gameId, $this->lastMove, Util::getState());
+        return Database::addPassMove($this->gameId, $this->lastMove, $this->getState());
+    }
+
+    public function getState()
+    {
+        $hands = array_map(function (Hand $hand) {
+            return $hand->getHand();
+        }, $this->getHands());
+
+        return serialize([$hands, $this->getBoard()->getBoard(), $this->getPlayer()]);
     }
 
     public function play(string $to, string $piece)
@@ -174,7 +178,7 @@ class Hive
 
         if (!$hand->hasPiece($piece)) {
             throw new HiveException("Player does not have tile");
-        } elseif ($board->emptyTile($to)) {
+        } elseif (!$board->emptyTile($to)) {
             throw new HiveException('Board position is not empty');
         } elseif ($board->boardCount() && !$board->hasNeighBour($to)) {
             throw new HiveException("board position has no neighbour");
@@ -187,6 +191,6 @@ class Hive
         $this->getBoard()->setTile($to, $piece, $this->getPlayer());
         $this->getPlayerHand()->removePiece($piece);
 
-        return Database::addPlayMove($this->gameId, $piece, $to, $this->lastMove, Util::getState());
+        return Database::addPlayMove($this->gameId, $piece, $to, $this->lastMove, $this->getState());
     }
 }
