@@ -40,7 +40,11 @@ class Board
 
     public function popTile(string $position): array
     {
-        return array_pop($this->board[$position]);
+        $tile = array_pop($this->board[$position]);
+        if (count($this->board[$position]) == 0) {
+            unset($this->board[$position]);
+        }
+        return $tile;
     }
 
     public function getNonEmptyTiles()
