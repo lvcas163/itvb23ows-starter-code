@@ -15,11 +15,6 @@ class Hand
         $this->hand = $hand;
     }
 
-    public function getPieces(): array
-    {
-        return $this->hand;
-    }
-
     public function hasPiece(string $piece): bool
     {
         return $this->hand[$piece] > 0;

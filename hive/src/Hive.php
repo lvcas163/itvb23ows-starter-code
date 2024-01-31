@@ -15,7 +15,8 @@ class Hive
     private array $hands;
     private int|null $lastMove;
 
-    public function __construct(Board $board = null, int $gameId = null, int $player = 0, array $hands = null, int $lastMove = null)
+    public function __construct(Board $board = null, int $gameId = null, int $player = 0, array $hands = null,
+                                int   $lastMove = null)
     {
         $this->board = $board ?? new Board();
         $this->gameId = $gameId ?? Database::newGame();
@@ -82,50 +83,74 @@ class Hive
         return $this->board;
     }
 
+    private function checkTile(string $from)
+    {
+        if ($this->board->emptyTile($from)) {
+            throw new HiveException('Board position is empty');
+        } elseif ($this->board->getLastTile($from)[0] != $this->player) {
+            throw new HiveException("Tile is not owned by player");
+        } elseif ($this->getPlayerHand()->hasPiece('Q')) {
+            throw new HiveException("Queen bee is not played");
+        }
+    }
+
+    private function checkHive(string $to)
+    {
+        if (!$this->board->hasNeighBour($to)) {
+            throw new HiveException("Move would split hive");
+        }
+
+        $all = $this->board->allTiles();
+        $queue = [array_shift($all)];
+        while ($queue) {
+            $next = explode(',', array_shift($queue));
+            foreach (Board::$OFFSETS as $pq) {
+                list($p, $q) = $pq;
+                $p += $next[0];
+                $q += $next[1];
+                if (in_array("$p,$q", $all)) {
+                    $queue[] = "$p,$q";
+                    $all = array_diff($all, ["$p,$q"]);
+                }
+            }
+        }
+        if ($all) {
+            throw new HiveException("Move would split hive");
+        }
+    }
+
+    private function checkDestination(string $from, string $to, string $type)
+    {
+        if ($from == $to) {
+            throw new HiveException('Tile must move');
+        } elseif (!$this->board->emptyTile($to) && $type != "B") {
+            throw new HiveException('Tile not empty');
+        } elseif ($type == "Q" || $type == "B") {
+            if (!$this->board->slide($from, $to)) {
+                throw new HiveException('Tile must slide');
+            }
+        }
+    }
+
+    private function moveTile(string $position, array $tile)
+    {
+        if (!$this->board->emptyTile($position)) {
+            $this->board->pushTile($position, $tile[1], $tile[0]);
+        } else {
+            $this->board->setTile($position, $tile[1], $tile[0]);
+        }
+    }
+
     public function move(string $from, string $to)
     {
         $tile = null;
         try {
-            if ($this->board->emptyTile($from)) {
-                throw new HiveException('Board position is empty');
-            } elseif ($this->board->getLastTile($from)[0] != $this->player) {
-                throw new HiveException("Tile is not owned by player");
-            } elseif ($this->getPlayerHand()->hasPiece('Q')) {
-                throw new HiveException("Queen bee is not played");
-            }
-
+            $this->checkTile($from);
             $tile = $this->board->popTile($from);
-            if (!$this->board->hasNeighBour($to)) {
-                throw new HiveException("Move would split hive");
-            }
+            $this->checkHive($from);
+            $this->checkDestination($from, $to, $tile[1]);
 
-            $all = $this->board->allTiles();
-            $queue = [array_shift($all)];
-            while ($queue) {
-                $next = explode(',', array_shift($queue));
-                foreach (Board::$OFFSETS as $pq) {
-                    list($p, $q) = $pq;
-                    $p += $next[0];
-                    $q += $next[1];
-                    if (in_array("$p,$q", $all)) {
-                        $queue[] = "$p,$q";
-                        $all = array_diff($all, ["$p,$q"]);
-                    }
-                }
-            }
-            if ($all) {
-                throw new HiveException("Move would split hive");
-            }
-
-            if ($from == $to) {
-                throw new HiveException('Tile must move');
-            } elseif (!$this->board->emptyTile($to) && $tile[1] != "B") {
-                throw new HiveException('Tile not empty');
-            } elseif ($tile[1] == "Q" || $tile[1] == "B") {
-                if (!$this->board->slide($from, $to)) {
-                    throw new HiveException('Tile must slide');
-                }
-            }
+            $this->moveTile($to, $tile);
         } catch (HiveException $e) {
             if ($tile) {
                 if (!$this->board->emptyTile($from)) {
@@ -133,15 +158,10 @@ class Hive
                 } else {
                     $this->board->setTile($from, $tile[1], $tile[0]);
                 }
+                $this->moveTile($from, $tile);
             }
 
             throw $e;
-        }
-
-        if (!$this->board->emptyTile($to)) {
-            $this->board->pushTile($to, $tile[1], $tile[0]);
-        } else {
-            $this->board->setTile($to, $tile[1], $tile[0]);
         }
 
         return Database::addNormalMove($this->gameId, $from, $to, $this->lastMove, $this->getState());
