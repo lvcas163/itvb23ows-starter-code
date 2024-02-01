@@ -53,4 +53,10 @@ class HandTest extends TestCase
         $hand->removePiece("Q");
         $this->assertEquals(10, $hand->sum());
     }
+
+    public function testGetRemainingPieces()
+    {
+        $hand = new Hand(["Q" => 0, "B" => 2, "S" => 2, "A" => 3, "G" => 3]);
+        $this->assertEquals(["B" => 2, "S" => 2, "A" => 3, "G" => 3], $hand->getRemainingPieces());
+    }
 }

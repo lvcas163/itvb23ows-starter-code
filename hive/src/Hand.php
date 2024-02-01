@@ -34,4 +34,9 @@ class Hand
     {
         return $this->hand;
     }
+
+    public function getRemainingPieces(): array
+    {
+        return array_filter($this->hand);
+    }
 }

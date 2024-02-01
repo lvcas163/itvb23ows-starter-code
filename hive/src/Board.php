@@ -18,9 +18,17 @@ class Board
         return end($this->board[$position]);
     }
 
-    public function allTiles()
+    public function allTiles(): array
     {
         return array_keys($this->board);
+    }
+
+    public function getPlayerTiles(int $player): array
+    {
+        $tiles = array_filter($this->board, function ($value) use ($player) {
+            return is_array($value) && isset($value[0]) && is_array($value[0]) && $value[0][0] == $player;
+        });
+        return array_keys($tiles);
     }
 
     public function emptyTile(string $position): bool
@@ -35,7 +43,7 @@ class Board
 
     public function pushTile(string $position, string $piece, int $player)
     {
-        array_push($this->board[$position], array($player, $piece));
+        $this->board[$position][] = array($player, $piece);
     }
 
     public function popTile(string $position): array
@@ -129,24 +137,6 @@ class Board
                 $this->len($this->board[$from] ?? []),
                 $this->len($this->board[$to] ?? [])
             );
-    }
-
-    public function calculatePositions(): array
-    {
-        $to = [];
-        $offsets = Board::$OFFSETS;
-        foreach ($offsets as $pq) {
-            foreach (array_keys($this->board) as $pos) {
-                $pq2 = explode(',', $pos);
-                $to[] = ($pq[0] + $pq2[0]) . ',' . ($pq[1] + $pq2[1]);
-            }
-        }
-        $to = array_unique($to);
-        if (!count($to)) {
-            $to[] = '0,0';
-        }
-
-        return $to;
     }
 
     public function getBoard()

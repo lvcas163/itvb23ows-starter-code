@@ -11,7 +11,7 @@ class HiveTest extends TestCase
 {
     public function testFromSession()
     {
-        $hand = ["Q" => 1,"B" => 2,"S" => 2,"A" => 3,"G" => 3];
+        $hand = ["Q" => 1, "B" => 2, "S" => 2, "A" => 3, "G" => 3];
         $session = [
             'board' => [],
             'hand' => [$hand, $hand],
@@ -38,7 +38,7 @@ class HiveTest extends TestCase
 
     public function testGetHands()
     {
-        $hand = new Hand(["Q" => 1,"B" => 2,"S" => 2,"A" => 3,"G" => 3]);
+        $hand = new Hand(["Q" => 1, "B" => 2, "S" => 2, "A" => 3, "G" => 3]);
         $hands = [$hand, $hand];
         $hive = new Hive(hands: $hands);
 
@@ -47,8 +47,8 @@ class HiveTest extends TestCase
 
     public function testGetPlayerHand()
     {
-        $hand = new Hand(["Q" => 1,"B" => 2,"S" => 2,"A" => 3,"G" => 3]);
-        $hand1 = new Hand(["Q" => 1,"B" => 2,"S" => 2,"A" => 3,"G" => 3]);
+        $hand = new Hand(["Q" => 1, "B" => 2, "S" => 2, "A" => 3, "G" => 3]);
+        $hand1 = new Hand(["Q" => 1, "B" => 2, "S" => 2, "A" => 3, "G" => 3]);
         $hive = new Hive(player: 0, hands: [$hand, $hand1]);
 
         $this->assertEquals($hand, $hive->getPlayerHand());
@@ -74,5 +74,20 @@ class HiveTest extends TestCase
         $this->assertEquals($board, $hive->getBoard());
     }
 
+    public function testGetValidPositions()
+    {
+        $emptyBoard = new Hive(new Board([]), player: 0);
+        $this->assertEquals(
+            ['0,0'], $emptyBoard->getValidPositions());
 
+        $nonEmptyCheck = new Hive(new Board(['0,0' => [[0, 'Q']]]), player: 1);
+        $nonEmptyTiles = ['0,1', '0,-1', '1,0', '-1,0', '-1,1', '1,-1'];
+        $this->assertEquals($nonEmptyTiles, $nonEmptyCheck->getValidPositions());
+
+        $neighboursBoard = new Board(['0,0' => [[0, 'Q']], '1,0' => [[1, 'Q']]]);
+        $hands = [new Hand(['Q' => 0, 'B' => 2, 'S' => 2, 'A' => 3, 'G' => 3,]), new Hand(['Q' => 0, 'B' => 2, 'S' => 2, 'A' => 3, 'G' => 3])];
+        $neighboursCheck = new Hive($neighboursBoard, player: 0, hands: $hands);
+        $validTiles = ['0,-1', '-1,0', '-1,1'];
+        $this->assertEquals($validTiles, $neighboursCheck->getValidPositions());
+    }
 }
