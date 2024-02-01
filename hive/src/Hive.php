@@ -158,7 +158,6 @@ class Hive
                 } else {
                     $this->board->setTile($from, $tile[1], $tile[0]);
                 }
-                $this->moveTile($from, $tile);
             }
 
             throw $e;

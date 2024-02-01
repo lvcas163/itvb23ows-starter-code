@@ -60,4 +60,32 @@ class BoardTest extends TestCase
 
         $this->assertEquals(['0,0'], $board->getPlayerTiles(0));
     }
+
+    public function testPopTile()
+    {
+        $board = new Board([
+            '0,0' => [[0, 'Q']],
+            '0,1' => [[1, 'Q']]
+        ]);
+
+        $newBoard = [
+            '0,0' => [[0, 'Q']]
+        ];
+
+        $board->popTile('0,1');
+
+        $this->assertEquals($newBoard, $board->getBoard());
+
+        $board = new Board([
+            '0,0' => [[0, 'Q'], [1, 'B']],
+            '0,1' => [[1, 'Q']]
+        ]);
+        $newBoard = [
+            '0,0' => [[0, 'Q']],
+            '0,1' => [[1, 'Q']]
+        ];
+
+        $board->popTile('0,0');
+        $this->assertEquals($newBoard, $board->getBoard());
+    }
 }
