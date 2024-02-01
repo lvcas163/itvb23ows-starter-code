@@ -192,7 +192,7 @@ class Hive
         return serialize([$hands, $this->getBoard()->getBoard(), $this->getPlayer()]);
     }
 
-    public function play(string $to, string $piece)
+    private function playRulesHand(string $piece)
     {
         $hand = $this->getPlayerHand();
 
@@ -202,6 +202,11 @@ class Hive
         if ($hand->sum() <= 8 && $this->getPlayerHand()->hasPiece('Q') && $piece != 'Q') {
             throw new HiveException('Must play queen bee');
         }
+    }
+
+    public function play(string $to, string $piece)
+    {
+        $this->playRulesHand($piece);
         $this->checkPlayRules($to);
 
         $this->getBoard()->setTile($to, $piece, $this->getPlayer());
