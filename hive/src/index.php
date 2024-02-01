@@ -136,7 +136,7 @@ $to = $hive->getValidPositions();
     <form method="post" action="play.php">
         <select name="piece">
             <?php
-            foreach ($hive->getPlayerHand()->getHand() as $tile => $ct) {
+            foreach ($hive->getPlayerHand()->getRemainingPieces() as $tile => $ct) {
                 echo "<option value=\"$tile\">$tile</option>";
             }
             ?>
@@ -153,7 +153,7 @@ $to = $hive->getValidPositions();
     <form method="post" action="move.php">
         <select name="from">
             <?php
-            foreach ($board->allTiles() as $pos) {
+            foreach ($board->getPlayerTiles($hive->getPlayer()) as $pos) {
                 echo "<option value=\"$pos\">$pos</option>";
             }
             ?>
