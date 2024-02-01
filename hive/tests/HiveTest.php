@@ -5,6 +5,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Lucas\Hive\Board;
 use Lucas\Hive\Hand;
 use Lucas\Hive\Hive;
+use Lucas\Hive\HiveException;
 use PHPUnit\Framework\TestCase;
 
 class HiveTest extends TestCase
@@ -89,5 +90,43 @@ class HiveTest extends TestCase
         $neighboursCheck = new Hive($neighboursBoard, player: 0, hands: $hands);
         $validTiles = ['0,-1', '-1,0', '-1,1'];
         $this->assertEquals($validTiles, $neighboursCheck->getValidPositions());
+    }
+
+    public function testMoveFourQueenBee()
+    {
+        $board = new Board(array(
+            '0,0' => array(0 => 0, 1 => 'B'),
+            '1,0' => array(0 => 1, 1 => 'B'),
+            '0,-1' => array(0 => 0, 1 => 'S'),
+            '1,1' => array(0 => 1, 1 => 'B'),
+            '1,-2' => array(0 => 0, 1 => 'S'),
+            '1,2' => array(0 => 1, 1 => 'S'),
+        ));
+        $hands = [new Hand([
+            'Q' => 1,
+            'B' => 1,
+            'S' => 0,
+            'A' => 3,
+            'G' => 3,
+        ]), new Hand([
+            'Q' => 1,
+            'B' => 0,
+            'S' => 1,
+            'A' => 3,
+            'G' => 3,
+        ])];
+
+        $hive = new Hive($board, gameId: 0, player: 0,hands: $hands);
+
+        $reflectionClass = new ReflectionClass($hive);
+        $playRulesHand = $reflectionClass->getMethod('playRulesHand');
+        $playRulesHand->setAccessible(true);
+
+        $playRulesHand->invoke($hive, 'Q');
+
+
+        $this->expectException(HiveException::class);
+
+        $playRulesHand->invoke($hive, 'B');
     }
 }
