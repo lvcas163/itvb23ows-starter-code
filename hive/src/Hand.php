@@ -39,4 +39,19 @@ class Hand
     {
         return array_filter($this->hand);
     }
+
+    public function getUsedPieces(): array
+    {
+        $usedPieces = [];
+
+        foreach ($this->hand as $piece => $count) {
+            $usedCount =self::$DEFAULT_HAND[$piece] - $count;
+
+            if ($usedCount > 0) {
+                $usedPieces[$piece] = $usedCount;
+            }
+        }
+
+        return $usedPieces;
+    }
 }

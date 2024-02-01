@@ -221,7 +221,10 @@ class Hive
         } elseif ($this->board->boardCount() && !$this->board->hasNeighBour($to)) {
             throw new HiveException("board position has no neighbour");
         } elseif ($this->getPlayerHand()->sum() < 11 && !$this->board->neighboursAreSameColor($this->getPlayer(), $to)) {
-            throw new HiveException("Board position has opposing neighbour");
+            $usedPieces = $this->getPlayerHand()->getUsedPieces();
+            if (count($usedPieces) != 1 || !isset($usedPieces['Q'])) { // fix for queen bee bug
+                throw new HiveException("Board position has opposing neighbour");
+            }
         }
     }
 

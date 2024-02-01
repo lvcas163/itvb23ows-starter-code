@@ -129,4 +129,41 @@ class HiveTest extends TestCase
 
         $playRulesHand->invoke($hive, 'B');
     }
+
+    public function testValidMoveTwoQueens()
+    {
+        $board1 = new Board(array(
+            '0,0' => [0, 'Q'],
+            '1,0' => [1, 'Q']
+        ));
+        $hands1 = [new Hand(["Q" => 0, "B" => 2, "S" => 2, "A" => 3, "G" => 3]), new Hand(["Q" => 0, "B" => 2, "S" => 2, "A" => 3, "G" => 3])];
+
+        $hive = new Hive($board1, player: 0, hands: $hands1);
+
+        $hive->checkPlayRules('0,1');
+
+        $board2 = new Board(array(
+            '0,0' => [0, 'B'],
+            '1,0' => [1, 'B']
+        ));
+
+        $hands2 = [new Hand([
+            'Q' => 1,
+            'B' => 0,
+            'S' => 0,
+            'A' => 3,
+            'G' => 3,
+        ]), new Hand([
+            'Q' => 1,
+            'B' => 0,
+            'S' => 0,
+            'A' => 3,
+            'G' => 3,
+        ])];
+
+        $this->expectException(HiveException::class);
+
+        $hive = new Hive($board2, player: 0, hands: $hands2);
+        $hive->checkPlayRules('0,1');
+    }
 }
