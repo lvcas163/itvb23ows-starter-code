@@ -83,7 +83,7 @@ class Hive
         return $this->board;
     }
 
-    private function checkTile(string $from)
+    private function checkTileMove(string $from)
     {
         if ($this->board->emptyTile($from)) {
             throw new HiveException('Board position is empty');
@@ -145,7 +145,7 @@ class Hive
     {
         $tile = null;
         try {
-            $this->checkTile($from);
+            $this->checkTileMove($from);
             $tile = $this->board->popTile($from);
             $this->checkHive($from);
             $this->checkDestination($from, $to, $tile[1]);
@@ -221,14 +221,11 @@ class Hive
         } elseif ($this->board->boardCount() && !$this->board->hasNeighBour($to)) {
             throw new HiveException("board position has no neighbour");
         } elseif ($this->getPlayerHand()->sum() < 11 && !$this->board->neighboursAreSameColor($this->getPlayer(), $to)) {
-            $usedPieces = $this->getPlayerHand()->getUsedPieces();
-            if (count($usedPieces) != 1 || !isset($usedPieces['Q'])) { // fix for queen bee bug
-                throw new HiveException("Board position has opposing neighbour");
-            }
+            throw new HiveException("Board position has opposing neighbour");
         }
     }
 
-    public function getValidPositions(): array
+    public function getValidPositionsPlay(): array
     {
         $to = [];
         $offsets = Board::$OFFSETS;
@@ -242,6 +239,26 @@ class Hive
                 } catch (HiveException) {
                     continue;
                 }
+                $to[] = $result;
+            }
+        }
+        $to = array_unique($to);
+        if (!count($to)) {
+            $to[] = '0,0';
+        }
+
+        return $to;
+    }
+
+    public function getValidPositionsMove(): array
+    {
+        $to = [];
+        $offsets = Board::$OFFSETS;
+        foreach ($offsets as $pq) {
+            $positions = array_keys($this->board->getBoard());
+            foreach ($positions as $pos) {
+                $pq2 = explode(',', $pos);
+                $result = ($pq[0] + $pq2[0]) . ',' . ($pq[1] + $pq2[1]);
                 $to[] = $result;
             }
         }

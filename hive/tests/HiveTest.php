@@ -79,17 +79,17 @@ class HiveTest extends TestCase
     {
         $emptyBoard = new Hive(new Board([]), player: 0);
         $this->assertEquals(
-            ['0,0'], $emptyBoard->getValidPositions());
+            ['0,0'], $emptyBoard->getValidPositionsPlay());
 
         $nonEmptyCheck = new Hive(new Board(['0,0' => [[0, 'Q']]]), player: 1);
         $nonEmptyTiles = ['0,1', '0,-1', '1,0', '-1,0', '-1,1', '1,-1'];
-        $this->assertEquals($nonEmptyTiles, $nonEmptyCheck->getValidPositions());
+        $this->assertEquals($nonEmptyTiles, $nonEmptyCheck->getValidPositionsPlay());
 
         $neighboursBoard = new Board(['0,0' => [[0, 'Q']], '1,0' => [[1, 'Q']]]);
         $hands = [new Hand(['Q' => 0, 'B' => 2, 'S' => 2, 'A' => 3, 'G' => 3,]), new Hand(['Q' => 0, 'B' => 2, 'S' => 2, 'A' => 3, 'G' => 3])];
         $neighboursCheck = new Hive($neighboursBoard, player: 0, hands: $hands);
         $validTiles = ['0,-1', '-1,0', '-1,1'];
-        $this->assertEquals($validTiles, $neighboursCheck->getValidPositions());
+        $this->assertEquals($validTiles, $neighboursCheck->getValidPositionsPlay());
     }
 
     public function testMoveFourQueenBee()
@@ -133,18 +133,19 @@ class HiveTest extends TestCase
     public function testValidMoveTwoQueens()
     {
         $board1 = new Board(array(
-            '0,0' => [0, 'Q'],
-            '1,0' => [1, 'Q']
+            '0,0' => [[0, 'Q']],
+            '1,0' => [[1, 'Q']]
         ));
         $hands1 = [new Hand(["Q" => 0, "B" => 2, "S" => 2, "A" => 3, "G" => 3]), new Hand(["Q" => 0, "B" => 2, "S" => 2, "A" => 3, "G" => 3])];
 
-        $hive = new Hive($board1, player: 0, hands: $hands1);
+        $hive = new Hive($board1, gameId: -1, player: 0, hands: $hands1);
 
-        $hive->checkPlayRules('0,1');
+        $moveId = $hive->move('0,0', '0,1');
+        $this->assertIsInt($moveId);
 
         $board2 = new Board(array(
-            '0,0' => [0, 'B'],
-            '1,0' => [1, 'B']
+            '0,0' => [[0, 'B']],
+            '1,0' => [[1, 'B']]
         ));
 
         $hands2 = [new Hand([
@@ -163,7 +164,7 @@ class HiveTest extends TestCase
 
         $this->expectException(HiveException::class);
 
-        $hive = new Hive($board2, player: 0, hands: $hands2);
-        $hive->checkPlayRules('0,1');
+        $hive = new Hive($board2, gameId: -1, player: 0, hands: $hands2);
+        $hive->move('0,0', '0,1');
     }
 }
