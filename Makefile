@@ -8,3 +8,6 @@ start_docker:
 
 stop_docker:
 	docker compose down
+
+test:
+	composer exec phpunit

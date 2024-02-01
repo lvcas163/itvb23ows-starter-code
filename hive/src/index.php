@@ -14,7 +14,8 @@ $hive = Hive::fromSession($_SESSION);
 $board = $hive->getBoard();
 $hands = $hive->getHands();
 
-$to = $hive->getValidPositions();
+$to = $hive->getValidPositionsPlay();
+$movePositions = $hive->getValidPositionsMove();
 
 ?>
 <!DOCTYPE html>
@@ -160,7 +161,7 @@ $to = $hive->getValidPositions();
         </select>
         <select name="to">
             <?php
-            foreach ($to as $pos) {
+            foreach ($movePositions as $pos) {
                 echo "<option value=\"$pos\">$pos</option>";
             }
             ?>
