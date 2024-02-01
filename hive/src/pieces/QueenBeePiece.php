@@ -8,10 +8,10 @@ class QueenBeePiece extends BasePiece
 {
     public function validateMove(string $from, string $to): bool
     {
-        if (!$this->board->emptyTile($to)) {
+        if (!$this->hive->getBoard()->emptyTile($to)) {
             throw new HiveException('Tile not empty');
         }
-        if (!$this->board->slide($from, $to)) {
+        if (!$this->hive->getBoard()->slide($from, $to)) {
             throw new HiveException('Tile must slide');
         }
         return true;

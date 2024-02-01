@@ -126,7 +126,7 @@ class Hive
             throw new HiveException('Tile must move');
         }
 
-        $piece = BasePiece::fromType($type, $this->board);
+        $piece = BasePiece::fromType($type, $this);
         $piece->validateMove($from, $to);
     }
 

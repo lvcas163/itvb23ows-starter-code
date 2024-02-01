@@ -8,7 +8,7 @@ class BeetlePiece extends BasePiece
 {
     public function validateMove(string $from, string $to): bool
     {
-        if (!$this->board->slide($from, $to)) {
+        if (!$this->hive->getBoard()->slide($from, $to)) {
             throw new HiveException('Tile must slide');
         }
         return true;

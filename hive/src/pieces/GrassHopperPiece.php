@@ -9,7 +9,7 @@ class GrassHopperPiece extends BasePiece
 
     public function validateMove(string $from, string $to): bool
     {
-        if (!$this->board->emptyTile($to)) {
+        if (!$this->hive->getBoard()->emptyTile($to)) {
             throw new HiveException('Tile not empty');
         }
         if (!$this->checkJumpTiles($from, $to)) {
@@ -65,7 +65,7 @@ class GrassHopperPiece extends BasePiece
         }
 
         foreach ($positions as $pos) {
-            if ($this->board->emptyTile($pos)) {
+            if ($this->hive->getBoard()->emptyTile($pos)) {
                 return false;
             }
         }
