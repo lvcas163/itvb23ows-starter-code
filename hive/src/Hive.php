@@ -6,6 +6,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Lucas\Hive\Board;
 use Lucas\Hive\HiveException;
+use Lucas\Hive\pieces\BasePiece;
 
 class Hive
 {
@@ -123,13 +124,10 @@ class Hive
     {
         if ($from == $to) {
             throw new HiveException('Tile must move');
-        } elseif (!$this->board->emptyTile($to) && $type != "B") {
-            throw new HiveException('Tile not empty');
-        } elseif ($type == "Q" || $type == "B") {
-            if (!$this->board->slide($from, $to)) {
-                throw new HiveException('Tile must slide');
-            }
         }
+
+        $piece = BasePiece::fromType($type, $this);
+        $piece->validateMove($from, $to);
     }
 
     private function moveTile(string $position, array $tile)
