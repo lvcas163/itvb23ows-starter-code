@@ -116,7 +116,7 @@ class HiveTest extends TestCase
             'G' => 3,
         ])];
 
-        $hive = new Hive($board, gameId: 0, player: 0,hands: $hands);
+        $hive = new Hive($board, gameId: 0, player: 0, hands: $hands);
 
         $reflectionClass = new ReflectionClass($hive);
         $playRulesHand = $reflectionClass->getMethod('playRulesHand');
@@ -166,5 +166,59 @@ class HiveTest extends TestCase
 
         $hive = new Hive($board2, gameId: -1, player: 0, hands: $hands2);
         $hive->move('0,0', '0,1');
+    }
+
+    public function testLostCondition()
+    {
+        $board = new Board([
+            '0,0' => [[0, 'Q']],
+            '1,0' => [[1, 'Q']],
+            '0,-1' => [[0, 'B']],
+            '-1,-1' => [[0, 'S']],
+            '-1,0' => [[0, 'B']],
+            '-1,1' => [[0, 'S']],
+            '0,1' => [[1, 'B']],
+            '1,-1' => [[1, 'B']],
+        ]);
+        $hive = new Hive($board);
+
+        $this->assertTrue($hive->hasLost(0));
+    }
+
+    public function testNoLoseCondition()
+    {
+        $board = new Board([
+            '0,0' => [[0, 'Q']],
+            '1,0' => [[1, 'Q']],
+            '0,-1' => [[0, 'B']],
+            '-1,-1' => [[0, 'S']],
+            '2,-1' => [[1, 'B']],
+            '-1,0' => [[0, 'B']],
+            '-1,1' => [[0, 'S']],
+            '0,1' => [[1, 'B']],
+        ]);
+        $hive = new Hive($board);
+        $this->assertFalse($hive->hasLost(0));
+    }
+
+    public function testDrawCondition()
+    {
+
+        $board = new Board([
+            '0,0' => [[0, 'Q']],
+            '1,0' => [[1, 'Q']],
+            '0,-1' => [[0, 'B']],
+            '-1,-1' => [[0, 'S']],
+            '-1,0' => [[0, 'B']],
+            '-1,1' => [[0, 'S']],
+            '0,1' => [[1, 'B']],
+            '1,-1' => [[1, 'B']],
+            '2,-1' => [[1, 'S']],
+            '1,1' => [[1, 'S']],
+            '2,0' => [[1, 'A']],
+        ]);
+        $hive = new Hive($board);
+        $this->assertTrue($hive->hasLost(0));
+        $this->assertTrue($hive->hasLost(1));
     }
 }

@@ -17,6 +17,21 @@ $hands = $hive->getHands();
 $to = $hive->getValidPositionsPlay();
 $movePositions = $hive->getValidPositionsMove();
 
+$playerWon = $hive->hasLost($hive->getPlayer());
+$otherPlayerWon = $hive->hasLost($hive->getOtherPlayer());
+$isDoneMessage = null;
+if ($playerWon) {
+    if ($otherPlayerWon) {
+        $isDoneMessage = 'Draw';
+    } else {
+        $isDoneMessage = 'Player ' . $hive->getOtherPlayer() . ' has won';
+    }
+} else if ($otherPlayerWon) {
+    $isDoneMessage = 'Player ' . $hive->getPlayer() . ' has won';
+} else {
+    $isDoneMessage = 'Game is not over yet';
+}
+
 ?>
 <!DOCTYPE html>
 
@@ -179,6 +194,11 @@ $movePositions = $hive->getValidPositionsMove();
             echo $_SESSION['error'];
         }
         unset($_SESSION['error']); ?>
+    </strong>
+    <strong>
+        <?php
+            echo $isDoneMessage;
+        ?>
     </strong>
     <ol>
         <?php
