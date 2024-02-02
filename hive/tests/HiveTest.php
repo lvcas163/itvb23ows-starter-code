@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Lucas\Hive\Board;
+use Lucas\Hive\Database;
 use Lucas\Hive\Hand;
 use Lucas\Hive\Hive;
 use Lucas\Hive\HiveException;
@@ -252,5 +253,46 @@ class HiveTest extends TestCase
         $hive = new Hive($board, player: 0, hands: $hand);
         $this->expectException(HiveException::class);
         $hive->canPass();
+    }
+
+    public function testPassEmptyBoard()
+    {
+        $board = new Board([]);
+        $hive = new Hive($board);
+
+        $this->expectException(HiveException::class);
+        $hive->undo();
+    }
+
+    public function testUndo()
+    {
+        $double = Mockery::mock('overload:' . Database::class);
+
+        // Set up the expectations for the mocked methods
+        $double->shouldReceive('getMove')->with(756)->andReturn([
+            'id' => 756,
+            'game_id' => 591,
+            'type' => 'play',
+            'move_from' => 'Q',
+            'move_to' => '0,1',
+            'previous_id' => 755,
+            'state' => 'a:3:{i:0;a:2:{i:0;a:5:{s:1:"Q";i:0;s:1:"B";i:2;s:1:"S";i:2;s:1:"A";i:3;s:1:"G";i:3;}i:1;a:5:{s:1:"Q";i:1;s:1:"B";i:2;s:1:"S";i:2;s:1:"A";i:3;s:1:"G";i:3;}}i:1;a:1:{s:3:"0,0";a:1:{i:0;a:2:{i:0;i:0;i:1;s:1:"Q";}}}i:2;i:1;}',
+        ])->once();
+
+        $double->shouldReceive('deleteMove')->with(756)->andReturn(true)->once();
+
+        $_SESSION = [];
+
+        $board = new Board([
+            '0,0' => [[0, 'Q']],
+            '0,1' => [[1, 'Q']],
+        ]);
+        $hands = [
+            new Hand([['Q' => 0, 'B' => 2, 'S' => 2, 'A' => 3, 'G' => 3]]),
+            new Hand(['Q' => 0, 'B' => 2, 'S' => 2, 'A' => 3, 'G' => 3])
+        ];
+        $hive = new Hive($board, 1, 0, $hands, 756);
+
+        $this->assertEquals(755, $hive->undo());
     }
 }

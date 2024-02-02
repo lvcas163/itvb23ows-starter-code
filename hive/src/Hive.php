@@ -173,6 +173,8 @@ class Hive
             $this->checkHive($from);
             $this->checkDestination($from, $to, $tile[1]);
 
+            $state = $this->getState();
+
             $this->moveTile($to, $tile);
         } catch (HiveException $e) {
             if ($tile) {
@@ -186,18 +188,23 @@ class Hive
             throw $e;
         }
 
-        return Database::addNormalMove($this->gameId, $from, $to, $this->lastMove, $this->getState());
+        return Database::addNormalMove($this->gameId, $from, $to, $this->lastMove, $state);
     }
 
     public function undo()
     {
-        $result = Database::getMove($this->lastMove)->fetch_array();
-        Util::setState($result[6]);
+        if(empty($this->board->getBoard())) {
+            throw new HiveException('Cant undo, board empty');
+        }
 
-        $moveIdBefore = $result[5];
-        $this->lastMove = $moveIdBefore;
+        $result = Database::getMove($this->lastMove);
+        Database::deleteMove($result['id']);
 
-        return $moveIdBefore;
+        $this->lastMove = $result['previous_id'];
+
+        Util::setState($result['state']);
+
+        return $this->lastMove;
     }
 
     public function canPass()
@@ -217,7 +224,9 @@ class Hive
     public function pass()
     {
         $this->canPass();
-        return Database::addPassMove($this->gameId, $this->lastMove, $this->getState());
+
+        $state = $this->getState();
+        return Database::addPassMove($this->gameId, $this->lastMove, $state);
     }
 
     public function getState()
@@ -246,10 +255,11 @@ class Hive
         $this->playRulesHand($piece);
         $this->checkPlayRules($to);
 
+        $state = $this->getState();
         $this->getBoard()->setTile($to, $piece, $this->getPlayer());
         $this->getPlayerHand()->removePiece($piece);
 
-        return Database::addPlayMove($this->gameId, $piece, $to, $this->lastMove, $this->getState());
+        return Database::addPlayMove($this->gameId, $piece, $to, $this->lastMove, $state);
     }
 
     public function checkPlayRules($to): void

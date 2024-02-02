@@ -5,13 +5,14 @@ session_start();
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Lucas\Hive\Hive;
+use Lucas\Hive\HiveException;
 
-function undo() {
-    $hive = Hive::fromSession($_SESSION);
-
+$hive = Hive::fromSession($_SESSION);
+try {
     $moveIdBefore = $hive->undo();
     $_SESSION['last_move'] = $moveIdBefore;
-    header('Location: index.php');
+} catch (HiveException $e) {
+    $_SESSION['error'] = $e->getMessage();
 }
 
-undo();
+header('Location: index.php');
