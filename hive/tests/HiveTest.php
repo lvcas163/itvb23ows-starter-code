@@ -266,7 +266,7 @@ class HiveTest extends TestCase
 
     public function testUndo()
     {
-        $double = Mockery::mock('overload:' . Database::class);
+        $double = Mockery::mock('overload:' . Database::class); // this fails when running all classes at once
 
         // Set up the expectations for the mocked methods
         $double->shouldReceive('getMove')->with(756)->andReturn([
