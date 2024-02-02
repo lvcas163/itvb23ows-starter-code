@@ -15,7 +15,13 @@ $board = $hive->getBoard();
 $hands = $hive->getHands();
 
 $to = $hive->getValidPositionsPlay();
+if (!count($to)) {
+    $to[] = '0,0';
+}
 $movePositions = $hive->getValidPositionsMove();
+if (!count($movePositions)) {
+    $movePositions[] = '0,0';
+}
 
 $playerWon = $hive->hasLost($hive->getPlayer());
 $otherPlayerWon = $hive->hasLost($hive->getOtherPlayer());

@@ -78,8 +78,7 @@ class HiveTest extends TestCase
     public function testGetValidPositions()
     {
         $emptyBoard = new Hive(new Board([]), player: 0);
-        $this->assertEquals(
-            ['0,0'], $emptyBoard->getValidPositionsPlay());
+        $this->assertEquals([], $emptyBoard->getValidPositionsPlay());
 
         $nonEmptyCheck = new Hive(new Board(['0,0' => [[0, 'Q']]]), player: 1);
         $nonEmptyTiles = ['0,1', '0,-1', '1,0', '-1,0', '-1,1', '1,-1'];
@@ -203,7 +202,6 @@ class HiveTest extends TestCase
 
     public function testDrawCondition()
     {
-
         $board = new Board([
             '0,0' => [[0, 'Q']],
             '1,0' => [[1, 'Q']],
@@ -220,5 +218,39 @@ class HiveTest extends TestCase
         $hive = new Hive($board);
         $this->assertTrue($hive->hasLost(0));
         $this->assertTrue($hive->hasLost(1));
+    }
+
+    public function testPassPossible()
+    {
+        $board = new Board([
+            "0,0" => [[0, "A"]]
+        ]);
+        $hand = [new Hand([]), new Hand([])];
+        $hive = new Hive($board, player: 0, hands: $hand);
+        $this->assertTrue($hive->canPass());
+    }
+
+    public function testPassPossibleMove()
+    {
+        $board = new Board([
+            "0,0" => [[0, 'Q']],
+            "0,1" => [[1, 'A']],
+            "0,-1" => [[1, 'A']],
+            "-1,0" => [[1, 'A']],
+            "-1,1" => [[1, 'A']]
+        ]);
+        $hand = [new Hand(["Q" => 0, "B" => 0, "S" => 0, "A" => 0, "G" => 0]), new Hand(["Q" => 0, "B" => 0, "S" => 0, "A" => 0, "G" => 0])];
+        $hive = new Hive($board, player: 0, hands: $hand);
+        $this->expectException(HiveException::class);
+        $hive->canPass();
+    }
+
+    public function testPassPossiblePlay()
+    {
+        $board = new Board(["0,0" => [[0, 'Q']]]);
+        $hand = [new Hand(["Q" => 1, "B" => 2, "S" => 2, "A" => 2, "G" => 2]), new Hand(["Q" => 1, "B" => 2, "S" => 2, "A" => 2, "G" => 2])];
+        $hive = new Hive($board, player: 0, hands: $hand);
+        $this->expectException(HiveException::class);
+        $hive->canPass();
     }
 }
