@@ -73,7 +73,17 @@ class Database
     public static function getMove(string $moveId)
     {
         $db = Database::getInstance();
-        $stmt = $db->prepare('SELECT * FROM moves WHERE id = ' . $moveId);
+        $stmt = $db->prepare('SELECT * FROM moves WHERE id = ?');
+        $stmt->bind_param('s', $moveId);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
+    }
+
+    public static function deleteMove(string $moveId)
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('DELETE FROM moves WHERE id = ?');
+        $stmt->bind_param('s', $moveId);
         $stmt->execute();
         return $stmt->get_result();
     }
