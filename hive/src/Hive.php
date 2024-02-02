@@ -200,13 +200,23 @@ class Hive
         return $moveIdBefore;
     }
 
-    public function pass()
+    public function canPass()
     {
-        $playPositions = $this->getValidPositionsPlay();
+        $hasNoPieces = empty($this->getPlayerHand()->getRemainingPieces());
+        $playPositions = [];
+        if(!$hasNoPieces) {
+            $playPositions = $this->getValidPositionsPlay();
+        }
         $movePositions = $this->getValidPositionsMove();
         if (!empty($playPositions) || !empty($movePositions)) {
             throw new HiveException('You cant pass until there are no moves left');
         }
+        return true;
+    }
+
+    public function pass()
+    {
+        $this->canPass();
         return Database::addPassMove($this->gameId, $this->lastMove, $this->getState());
     }
 
