@@ -31,6 +31,14 @@ services:
         networks:
             - hive-network
 
+    ai:
+        build:
+            context: ./ai
+        ports:
+            - "5000:5000"
+        networks:
+            - hive-network
+
 
     jenkins:
         image: jenkins/jenkins:lts
