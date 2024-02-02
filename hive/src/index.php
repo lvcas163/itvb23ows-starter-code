@@ -22,6 +22,7 @@ $movePositions = $hive->getValidPositionsMove();
 if (!count($movePositions)) {
     $movePositions[] = '0,0';
 }
+$moves = $hive->getMoves();
 
 $playerWon = $hive->hasLost($hive->getPlayer());
 $otherPlayerWon = $hive->hasLost($hive->getOtherPlayer());
@@ -208,14 +209,16 @@ if ($playerWon) {
     </strong>
     <ol>
         <?php
-        $result = $hive->getMoves();
-        foreach ($result as $row) {
+        foreach ($moves as $row) {
             echo '<li>' . $row['type'] . ' ' . $row['move_from'] ?: 'NULL' . ' ' . $row['move_to'] ?: 'NULL' . '</li>';
         }
         ?>
     </ol>
     <form method="post" action="undo.php">
         <input type="submit" value="Undo">
+    </form>
+    <form method="post" action="ai.php">
+        <input type="submit" value="AI Play">
     </form>
 </body>
 

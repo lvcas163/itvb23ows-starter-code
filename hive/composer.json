@@ -3,7 +3,8 @@
     "type": "project",
     "require": {
         "ext-mysqli": "*",
-        "ext-session": "*"
+        "ext-session": "*",
+        "guzzlehttp/guzzle": "^7.8"
     },
     "autoload": {
         "psr-4": {
