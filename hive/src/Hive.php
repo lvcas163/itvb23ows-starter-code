@@ -267,4 +267,25 @@ class Hive
 
         return $to;
     }
+
+    public function hasLost(int $player): bool
+    {
+        $queenPiece = $this->board->findPiece('Q', $player);
+
+        if($queenPiece) {
+            $origin = explode(',', $queenPiece);
+            $count = 0;
+            foreach (Board::$OFFSETS as $offset) {
+                $neighbour = $origin[0] + $offset[0] . ',' . $origin[1] + $offset[1];
+                if (!$this->board->emptyTile($neighbour)) {
+                    $count++;
+                }
+            }
+
+            if ($count == 6) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -46,6 +46,19 @@ class Board
         $this->board[$position][] = array($player, $piece);
     }
 
+    public function findPiece(string $piece, int $player): string|null
+    {
+        foreach ($this->board as $tile => $tileData)
+        {
+            [$playerTile, $pieceTile] = end($tileData);
+            if ($playerTile == $player && $pieceTile == $piece)
+            {
+                return $tile;
+            }
+        }
+        return null;
+    }
+
     public function popTile(string $position): array
     {
         $tile = array_pop($this->board[$position]);
