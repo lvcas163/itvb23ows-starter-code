@@ -1,0 +1,342 @@
+<?php
+
+namespace Lucas\Hive;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Lucas\Hive\Board;
+use Lucas\Hive\HiveException;
+use Lucas\Hive\pieces\BasePiece;
+
+class Hive
+{
+    private Board $board;
+    private int $gameId;
+    private int $player;
+    private array $hands;
+    private int|null $lastMove;
+
+    public function __construct(Board $board = null, int $gameId = null, int $player = 0, array $hands = null,
+                                int   $lastMove = null)
+    {
+        $this->board = $board ?? new Board();
+        $this->gameId = $gameId ?? Database::newGame();
+        $this->player = $player;
+        $this->hands = $hands ?? [0 => new Hand(), 1 => new Hand()];
+        $this->lastMove = $lastMove ?? null;
+    }
+
+    public static function fromSession(array $session)
+    {
+        $hands = null;
+        if (isset($session['hand'])) {
+            $hands = array_map(function (array $hand) {
+                return new Hand($hand);
+            }, $session['hand']);
+        }
+
+        $last_move = null;
+        if (isset($session['last_move'])) {
+            $last_move = $session['last_move'];
+        }
+
+        return new Hive(
+            new Board($session['board']),
+            $session['game_id'],
+            $session['player'],
+            $hands,
+            $last_move
+        );
+    }
+
+    public function getOtherPlayer()
+    {
+        return 1 - $this->player;
+    }
+
+    public function getMoves()
+    {
+        return Database::getMoves($this->gameId);
+    }
+
+    public function getHands()
+    {
+        return $this->hands;
+    }
+
+    public function getPlayerHand()
+    {
+        return $this->hands[$this->player];
+    }
+
+    public function getGameId()
+    {
+        return $this->gameId;
+    }
+
+    public function getPlayer()
+    {
+        return $this->player;
+    }
+
+    public function getBoard()
+    {
+        return $this->board;
+    }
+
+    private function checkTileMove(string $from)
+    {
+        if ($this->board->emptyTile($from)) {
+            throw new HiveException('Board position is empty');
+        } elseif ($this->board->getLastTile($from)[0] != $this->player) {
+            throw new HiveException("Tile is not owned by player");
+        } elseif ($this->getPlayerHand()->hasPiece('Q')) {
+            throw new HiveException("Queen bee is not played");
+        }
+    }
+
+    private function checkHive(string $to)
+    {
+        if (!$this->board->hasNeighBour($to)) {
+            throw new HiveException("Move would split hive");
+        }
+
+        $all = $this->board->allTiles();
+        $queue = [array_shift($all)];
+        while ($queue) {
+            $next = explode(',', array_shift($queue));
+            foreach (Board::$OFFSETS as $pq) {
+                list($p, $q) = $pq;
+                $p += $next[0];
+                $q += $next[1];
+                if (in_array("$p,$q", $all)) {
+                    $queue[] = "$p,$q";
+                    $all = array_diff($all, ["$p,$q"]);
+                }
+            }
+        }
+        if ($all) {
+            throw new HiveException("Move would split hive");
+        }
+    }
+
+    private function checkDestination(string $from, string $to, string $type)
+    {
+        if ($from == $to) {
+            throw new HiveException('Tile must move');
+        }
+
+        $piece = BasePiece::fromType($type, $this);
+        $piece->validateMove($from, $to);
+    }
+
+    private function moveTile(string $position, array $tile)
+    {
+        if (!$this->board->emptyTile($position)) {
+            $this->board->pushTile($position, $tile[1], $tile[0]);
+        } else {
+            $this->board->setTile($position, $tile[1], $tile[0]);
+        }
+    }
+
+    public function isMoveValid(string $from, string $to, string $piece)
+    {
+        $tile = null;
+        $error = null;
+        try {
+            $this->checkTileMove($from);
+            $tile = $this->board->popTile($from);
+            $this->checkHive($from);
+            $this->checkDestination($from, $to, $piece);
+        } catch (HiveException $e) {
+            $error = $e;
+        } finally {
+            if ($tile) {
+                if (!$this->board->emptyTile($from)) {
+                    $this->board->pushTile($from, $tile[1], $tile[0]);
+                } else {
+                    $this->board->setTile($from, $tile[1], $tile[0]);
+                }
+            }
+            if ($error) {
+                throw $error;
+            }
+        }
+    }
+
+    public function move(string $from, string $to)
+    {
+        $tile = null;
+        try {
+            $this->checkTileMove($from);
+            $tile = $this->board->popTile($from);
+            $this->checkHive($from);
+            $this->checkDestination($from, $to, $tile[1]);
+
+            $state = $this->getState();
+
+            $this->moveTile($to, $tile);
+        } catch (HiveException $e) {
+            if ($tile) {
+                if (!$this->board->emptyTile($from)) {
+                    $this->board->pushTile($from, $tile[1], $tile[0]);
+                } else {
+                    $this->board->setTile($from, $tile[1], $tile[0]);
+                }
+            }
+
+            throw $e;
+        }
+
+        return Database::addNormalMove($this->gameId, $from, $to, $this->lastMove, $state);
+    }
+
+    public function undo()
+    {
+        if(empty($this->board->getBoard())) {
+            throw new HiveException('Cant undo, board empty');
+        }
+
+        $result = Database::getMove($this->lastMove);
+        Database::deleteMove($result['id']);
+
+        $this->lastMove = $result['previous_id'];
+
+        Util::setState($result['state']);
+
+        return $this->lastMove;
+    }
+
+    public function canPass()
+    {
+        $hasNoPieces = empty($this->getPlayerHand()->getRemainingPieces());
+        $playPositions = [];
+        if(!$hasNoPieces) {
+            $playPositions = $this->getValidPositionsPlay();
+        }
+        $movePositions = $this->getValidPositionsMove();
+        if (!empty($playPositions) || !empty($movePositions)) {
+            throw new HiveException('You cant pass until there are no moves left');
+        }
+        return true;
+    }
+
+    public function pass()
+    {
+        $this->canPass();
+
+        $state = $this->getState();
+        return Database::addPassMove($this->gameId, $this->lastMove, $state);
+    }
+
+    public function getState()
+    {
+        $hands = array_map(function (Hand $hand) {
+            return $hand->getHand();
+        }, $this->getHands());
+
+        return serialize([$hands, $this->getBoard()->getBoard(), $this->getPlayer()]);
+    }
+
+    private function playRulesHand(string $piece)
+    {
+        $hand = $this->getPlayerHand();
+
+        if (!$hand->hasPiece($piece)) {
+            throw new HiveException("Player does not have tile");
+        }
+        if ($hand->sum() <= 8 && $this->getPlayerHand()->hasPiece('Q') && $piece != 'Q') {
+            throw new HiveException('Must play queen bee');
+        }
+    }
+
+    public function play(string $to, string $piece)
+    {
+        $this->playRulesHand($piece);
+        $this->checkPlayRules($to);
+
+        $state = $this->getState();
+        $this->getBoard()->setTile($to, $piece, $this->getPlayer());
+        $this->getPlayerHand()->removePiece($piece);
+
+        return Database::addPlayMove($this->gameId, $piece, $to, $this->lastMove, $state);
+    }
+
+    public function checkPlayRules($to): void
+    {
+        if (!$this->board->emptyTile($to)) {
+            throw new HiveException('Board position is not empty');
+        } elseif ($this->board->boardCount() && !$this->board->hasNeighBour($to)) {
+            throw new HiveException("board position has no neighbour");
+        } elseif ($this->getPlayerHand()->sum() < 11 && !$this->board->neighboursAreSameColor($this->getPlayer(), $to)) {
+            throw new HiveException("Board position has opposing neighbour");
+        }
+    }
+
+    public function getValidPositionsPlay(): array
+    {
+        $to = [];
+        $offsets = Board::$OFFSETS;
+        foreach ($offsets as $pq) {
+            $positions = array_keys($this->board->getBoard());
+            foreach ($positions as $pos) {
+                $pq2 = explode(',', $pos);
+                $result = ($pq[0] + $pq2[0]) . ',' . ($pq[1] + $pq2[1]);
+                try {
+                    $this->checkPlayRules($result);
+                } catch (HiveException) {
+                    continue;
+                }
+                $to[] = $result;
+            }
+        }
+        return array_unique($to);
+    }
+
+    public function getValidPositionsMove(): array
+    {
+        $from = $this->board->getPlayerTiles($this->getPlayer());
+        $pieces = $this->board->getPlayerPieces($this->getPlayer());
+
+        $to = [];
+        $offsets = Board::$OFFSETS;
+
+        foreach ($pieces as $piece) {
+            foreach ($from as $fromTile) {
+                foreach ($offsets as $pq) {
+                    $pq2 = explode(',', $fromTile);
+                    $toCoordinate = ($pq[0] + $pq2[0]) . ',' . ($pq[1] + $pq2[1]);
+
+                    try {
+                        $this->isMoveValid($fromTile, $toCoordinate, $piece);
+                        $to[] = $toCoordinate;
+                    } catch (HiveException) {
+                        continue;
+                    }
+                }
+            }
+        }
+        return array_unique($to);
+    }
+
+    public function hasLost(int $player): bool
+    {
+        $queenPiece = $this->board->findPiece('Q', $player);
+
+        if ($queenPiece) {
+            $origin = explode(',', $queenPiece);
+            $count = 0;
+            foreach (Board::$OFFSETS as $offset) {
+                $neighbour = $origin[0] + $offset[0] . ',' . $origin[1] + $offset[1];
+                if (!$this->board->emptyTile($neighbour)) {
+                    $count++;
+                }
+            }
+
+            if ($count == 6) {
+                return true;
+            }
+        }
+        return false;
+    }
+}

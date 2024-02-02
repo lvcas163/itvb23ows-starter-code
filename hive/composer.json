@@ -1,0 +1,24 @@
+{
+    "name": "lucas/hive",
+    "type": "project",
+    "require": {
+        "ext-mysqli": "*",
+        "ext-session": "*",
+        "guzzlehttp/guzzle": "^7.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lucas\\Hive\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Lucas",
+            "email": "Lucas@lucas.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^10.5",
+        "mockery/mockery": "^1.6"
+    }
+}
