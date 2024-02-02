@@ -78,8 +78,7 @@ class HiveTest extends TestCase
     public function testGetValidPositions()
     {
         $emptyBoard = new Hive(new Board([]), player: 0);
-        $this->assertEquals(
-            ['0,0'], $emptyBoard->getValidPositionsPlay());
+        $this->assertEquals([], $emptyBoard->getValidPositionsPlay());
 
         $nonEmptyCheck = new Hive(new Board(['0,0' => [[0, 'Q']]]), player: 1);
         $nonEmptyTiles = ['0,1', '0,-1', '1,0', '-1,0', '-1,1', '1,-1'];
@@ -203,7 +202,6 @@ class HiveTest extends TestCase
 
     public function testDrawCondition()
     {
-
         $board = new Board([
             '0,0' => [[0, 'Q']],
             '1,0' => [[1, 'Q']],
@@ -220,5 +218,10 @@ class HiveTest extends TestCase
         $hive = new Hive($board);
         $this->assertTrue($hive->hasLost(0));
         $this->assertTrue($hive->hasLost(1));
+    }
+
+    public function testPassNotPossible()
+    {
+
     }
 }

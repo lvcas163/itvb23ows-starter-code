@@ -139,6 +139,31 @@ class Hive
         }
     }
 
+    public function isMoveValid(string $from, string $to, string $piece)
+    {
+        $tile = null;
+        $error = null;
+        try {
+            $this->checkTileMove($from);
+            $tile = $this->board->popTile($from);
+            $this->checkHive($from);
+            $this->checkDestination($from, $to, $piece);
+        } catch (HiveException $e) {
+            $error = $e;
+        } finally {
+            if ($tile) {
+                if (!$this->board->emptyTile($from)) {
+                    $this->board->pushTile($from, $tile[1], $tile[0]);
+                } else {
+                    $this->board->setTile($from, $tile[1], $tile[0]);
+                }
+            }
+            if ($error) {
+                throw $error;
+            }
+        }
+    }
+
     public function move(string $from, string $to)
     {
         $tile = null;
@@ -177,6 +202,11 @@ class Hive
 
     public function pass()
     {
+        $playPositions = $this->getValidPositionsPlay();
+        $movePositions = $this->getValidPositionsMove();
+        if (!empty($playPositions) || !empty($movePositions)) {
+            throw new HiveException('You cant pass until there are no moves left');
+        }
         return Database::addPassMove($this->gameId, $this->lastMove, $this->getState());
     }
 
@@ -240,39 +270,40 @@ class Hive
                 $to[] = $result;
             }
         }
-        $to = array_unique($to);
-        if (!count($to)) {
-            $to[] = '0,0';
-        }
-
-        return $to;
+        return array_unique($to);
     }
 
     public function getValidPositionsMove(): array
     {
+        $from = $this->board->getPlayerTiles($this->getPlayer());
+        $pieces = $this->board->getPlayerPieces($this->getPlayer());
+
         $to = [];
         $offsets = Board::$OFFSETS;
-        foreach ($offsets as $pq) {
-            $positions = array_keys($this->board->getBoard());
-            foreach ($positions as $pos) {
-                $pq2 = explode(',', $pos);
-                $result = ($pq[0] + $pq2[0]) . ',' . ($pq[1] + $pq2[1]);
-                $to[] = $result;
+
+        foreach ($pieces as $piece) {
+            foreach ($from as $fromTile) {
+                foreach ($offsets as $pq) {
+                    $pq2 = explode(',', $fromTile);
+                    $toCoordinate = ($pq[0] + $pq2[0]) . ',' . ($pq[1] + $pq2[1]);
+
+                    try {
+                        $this->isMoveValid($fromTile, $toCoordinate, $piece);
+                        $to[] = $toCoordinate;
+                    } catch (HiveException) {
+                        continue;
+                    }
+                }
             }
         }
-        $to = array_unique($to);
-        if (!count($to)) {
-            $to[] = '0,0';
-        }
-
-        return $to;
+        return array_unique($to);
     }
 
     public function hasLost(int $player): bool
     {
         $queenPiece = $this->board->findPiece('Q', $player);
 
-        if($queenPiece) {
+        if ($queenPiece) {
             $origin = explode(',', $queenPiece);
             $count = 0;
             foreach (Board::$OFFSETS as $offset) {
