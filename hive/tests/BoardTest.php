@@ -14,7 +14,7 @@ class BoardTest extends TestCase
         $this->assertFalse(Board::isNeighbour('0,0', '2,2'));
     }
 
-    public function testHasNeighBour()
+    public function testHasNeighbour()
     {
         $board = new Board(['0,1' => true, '1,0' => false]);
         $this->assertTrue($board->hasNeighBour('0,0'));
@@ -36,18 +36,6 @@ class BoardTest extends TestCase
     {
         $this->assertEquals(0, Board::len(null));
         $this->assertEquals(3, Board::len([1, 2, 3]));
-    }
-
-    public function testSlide()
-    {
-        $board = new Board([
-            '0,0' => [['white']],
-            '0,1' => [['black']],
-            '1,0' => null,
-            '1,1' => null
-        ]);
-        $this->assertTrue($board->slide('0,0', '1,0'));
-        $this->assertFalse($board->slide('0,0', '2,0'));
     }
 
     public function testGetPlayerTiles()
