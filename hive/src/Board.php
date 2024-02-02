@@ -23,6 +23,19 @@ class Board
         return array_keys($this->board);
     }
 
+    public function getPlayerPieces(int $player): array
+    {
+        $tiles = $this->getPlayerTiles($player);
+
+        $pieces = [];
+        foreach($tiles as $tile) {
+            $tileOnTop = $this->getLastTile($tile);
+            $piece = $tileOnTop[1];
+            $pieces[] = $piece;
+        }
+        return $pieces;
+    }
+
     public function getPlayerTiles(int $player): array
     {
         $tiles = array_filter($this->board, function ($value) use ($player) {
@@ -149,4 +162,19 @@ class Board
     {
         return $this->board;
     }
+
+    public function __clone()
+    {
+        $this->board = array_map(function ($tile) {
+            return is_array($tile) ? $this->cloneArray($tile) : $tile;
+        }, $this->board);
+    }
+
+    private function cloneArray(array $array)
+    {
+        return array_map(function ($element) {
+            return is_array($element) ? $this->cloneArray($element) : $element;
+        }, $array);
+    }
+
 }
