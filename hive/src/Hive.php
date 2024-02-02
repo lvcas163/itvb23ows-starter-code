@@ -168,6 +168,10 @@ class Hive
 
     public function undo()
     {
+        if(empty($this->board->getBoard())) {
+            throw new HiveException('Cant undo, board empty');
+        }
+
         $result = Database::getMove($this->lastMove);
         Database::deleteMove($result['id']);
 
